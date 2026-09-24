@@ -6,11 +6,11 @@ import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 const inputClass =
   "w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30";
 
-export function LoginForm({ next, initialError }: { next: string; initialError?: string }) {
+export function LoginForm({ next, initialState }: { next: string; initialState: AuthState }) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [state, formAction, pending] = useActionState<AuthState, FormData>(
     mode === "signin" ? signIn : signUp,
-    { error: initialError },
+    initialState,
   );
 
   return (

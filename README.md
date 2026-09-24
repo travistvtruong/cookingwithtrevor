@@ -14,6 +14,18 @@ A food blog and personal recipe tracker: read and rate recipes, save them to you
 3. Apply the database schema: open Supabase > SQL Editor, paste `supabase/migrations/20260924000000_init.sql`, and run it.
 4. Start the dev server: `npm run dev` and open http://localhost:3000
 
+### Confirmation emails
+
+Works out of the box with Supabase's default email. If a user opens the link in a different browser than the one they signed up in, their email is still confirmed and they're asked to sign in.
+
+**Before launch:** Supabase's built-in email only delivers to your own team's addresses. Set up custom SMTP (for example Resend, with your domain) in Supabase > Project Settings > Authentication > SMTP. Then, in Authentication > Emails > Confirm signup, replace the link with:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Confirm your email</a>
+```
+
+That signs users in from any browser or device via `/auth/confirm`.
+
 ### Make yourself the admin
 
 Sign up on the site, then run this in the Supabase SQL Editor:

@@ -59,9 +59,3 @@ export async function signInWithGoogle(formData: FormData) {
 
   redirect(data.url);
 }
-
-export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  redirect("/");
-}
