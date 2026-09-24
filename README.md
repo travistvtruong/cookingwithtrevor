@@ -1,0 +1,49 @@
+# cookingwithtrevor
+
+A food blog and personal recipe tracker: read and rate recipes, save them to your library, and turn them into a combined grocery list.
+
+**Stack:** Next.js 16 (App Router, TypeScript) · Supabase (Postgres, Auth, Storage) · Tailwind CSS · Vercel
+
+- Product spec: [PRD.md](PRD.md)
+- Technical decisions: [DECISIONS.md](DECISIONS.md)
+
+## Local setup
+
+1. Install dependencies: `npm install`
+2. Copy `.env.example` to `.env.local` and fill in your Supabase project URL and publishable key (Supabase dashboard > Project Settings > API).
+3. Apply the database schema: open Supabase > SQL Editor, paste `supabase/migrations/20260924000000_init.sql`, and run it.
+4. Start the dev server: `npm run dev` and open http://localhost:3000
+
+### Make yourself the admin
+
+Sign up on the site, then run this in the Supabase SQL Editor:
+
+```sql
+update public.profiles set role = 'admin'
+where id = (select id from auth.users where email = 'you@example.com');
+```
+
+### Google sign-in
+
+1. In Google Cloud Console, create an OAuth client (Web application). Add `https://<your-project-ref>.supabase.co/auth/v1/callback` as an authorized redirect URI.
+2. In Supabase > Authentication > Sign In / Providers > Google, paste the client ID and secret.
+3. In Supabase > Authentication > URL Configuration, set the Site URL and add `http://localhost:3000/auth/callback` and `https://<your-vercel-domain>/auth/callback` to Redirect URLs.
+
+## Project structure
+
+```
+app/                 routes (one folder per feature)
+  login/             sign in / sign up (email + Google)
+  auth/callback/     OAuth and email-confirmation handler
+components/          shared UI
+lib/supabase/        Supabase clients (browser, server, proxy)
+proxy.ts             refreshes auth sessions; guards /library, /grocery, /admin
+supabase/migrations/ database schema and row-level security policies
+```
+
+## Security
+
+- Row-level security on every table: users only see their own library, private recipes and grocery lists.
+- Only admins can publish posts or upload photos; users cannot change their own role.
+- Comments are length-limited in the database and rendered as plain text.
+- Reviews are limited to one per user per recipe, with a rate limit on new accounts.
