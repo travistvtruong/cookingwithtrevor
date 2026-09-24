@@ -1,0 +1,26 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: { index: false },
+};
+
+export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
+  await requireAdmin();
+
+  return (
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <nav className="mb-8 flex items-center gap-4 text-sm">
+        <Link href="/admin" className="font-semibold text-stone-900">
+          Dashboard
+        </Link>
+        <Link href="/admin/new" className="font-medium text-orange-700 hover:underline">
+          New post
+        </Link>
+      </nav>
+      {children}
+    </div>
+  );
+}

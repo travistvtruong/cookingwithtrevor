@@ -11,7 +11,7 @@ A food blog and personal recipe tracker: read and rate recipes, save them to you
 
 1. Install dependencies: `npm install`
 2. Copy `.env.example` to `.env.local` and fill in your Supabase project URL and publishable key (Supabase dashboard > Project Settings > API).
-3. Apply the database schema: open Supabase > SQL Editor, paste `supabase/migrations/20260924000000_init.sql`, and run it.
+3. Apply the database schema: open Supabase > SQL Editor and run each file in `supabase/migrations/` in order (oldest first).
 4. Start the dev server: `npm run dev` and open http://localhost:3000
 
 ### Confirmation emails
@@ -47,6 +47,8 @@ where id = (select id from auth.users where email = 'you@example.com');
 app/                 routes (one folder per feature)
   login/             sign in / sign up (email + Google)
   auth/callback/     OAuth and email-confirmation handler
+  recipes/[slug]/    public recipe post (cached, rebuilt on save)
+  admin/             author dashboard: list, create, edit, delete posts
 components/          shared UI
 lib/supabase/        Supabase clients (browser, server, proxy)
 proxy.ts             refreshes auth sessions; guards /library, /grocery, /admin
