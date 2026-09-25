@@ -44,7 +44,10 @@ export function UserMenu() {
   }
 
   return (
-    <div className="flex items-center gap-3 text-sm">
+    <div className="flex items-center gap-4 text-sm">
+      <Link href="/library" className="font-medium text-stone-800 hover:text-orange-700">
+        Library
+      </Link>
       <span className="hidden max-w-40 truncate text-stone-600 sm:inline">{email}</span>
       <button type="button" onClick={handleSignOut} className="font-medium text-orange-700 hover:underline">
         Sign out

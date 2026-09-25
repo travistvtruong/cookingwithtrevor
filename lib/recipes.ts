@@ -1,7 +1,9 @@
 import "server-only";
 import { cache } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Ingredient } from "@/lib/ingredients";
+import type { EditableRecipe } from "@/lib/recipe-form";
 
 export type RecipeSummary = {
   id: string;
@@ -62,6 +64,45 @@ export const getPublishedRecipe = cache(async (slug: string): Promise<Recipe | n
 
   return { ...data, rating: rating ?? null };
 });
+
+// A recipe the signed-in user wrote, with ingredients and steps, for editing.
+export async function getOwnRecipe(
+  supabase: SupabaseClient,
+  id: string,
+  userId: string,
+): Promise<EditableRecipe | null> {
+  const { data } = await supabase
+    .from("recipes")
+    .select(
+      `id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, is_public,
+       ingredients (position, quantity, unit, name),
+       steps (position, text)`,
+    )
+    .eq("id", id)
+    .eq("author_id", userId)
+    .order("position", { referencedTable: "ingredients" })
+    .order("position", { referencedTable: "steps" })
+    .maybeSingle();
+  return data;
+}
+
+export type LibraryItem = {
+  notes: string;
+  saved_at: string;
+  recipe: RecipeSummary & { is_public: boolean; author_id: string };
+};
+
+// Everything in the user's library, newest first. Recipes that are no longer
+// visible (e.g. a post the author unpublished) drop out.
+export async function getLibrary(supabase: SupabaseClient, userId: string): Promise<LibraryItem[]> {
+  const { data, error } = await supabase
+    .from("saved_recipes")
+    .select(`notes, saved_at:created_at, recipe:recipes (${SUMMARY_FIELDS}, is_public, author_id)`)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as unknown as LibraryItem[]).filter((item) => item.recipe);
+}
 
 export function totalMinutes(r: Pick<RecipeSummary, "prep_min" | "cook_min">) {
   const total = (r.prep_min ?? 0) + (r.cook_min ?? 0);

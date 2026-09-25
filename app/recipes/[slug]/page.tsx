@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { RecipeDetails } from "@/components/recipe-details";
+import { SaveButton } from "@/components/save-button";
 import { formatIngredient } from "@/lib/ingredients";
 import { formatMinutes, getPublishedRecipe, totalMinutes, type Recipe } from "@/lib/recipes";
 
@@ -36,12 +38,6 @@ export default async function RecipePage({ params }: PageProps<"/recipes/[slug]"
   if (!recipe) notFound();
 
   const total = totalMinutes(recipe);
-  const facts = [
-    recipe.prep_min != null && ["Prep", formatMinutes(recipe.prep_min)],
-    recipe.cook_min != null && ["Cook", formatMinutes(recipe.cook_min)],
-    total && ["Total", formatMinutes(total)],
-    recipe.servings && ["Serves", String(recipe.servings)],
-  ].filter(Boolean) as [string, string][];
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
@@ -64,12 +60,15 @@ export default async function RecipePage({ params }: PageProps<"/recipes/[slug]"
             {total && <span>{formatMinutes(total)}</span>}
             {recipe.tags.length > 0 && <span>{recipe.tags.join(" · ")}</span>}
           </div>
-          <a
-            href="#recipe"
-            className="inline-block rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
-          >
-            Jump to recipe ↓
-          </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="#recipe"
+              className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+            >
+              Jump to recipe ↓
+            </a>
+            <SaveButton recipeId={recipe.id} slug={recipe.slug} />
+          </div>
         </header>
 
         {recipe.photo_url && (
@@ -93,45 +92,9 @@ export default async function RecipePage({ params }: PageProps<"/recipes/[slug]"
           </div>
         )}
 
-        <section
-          id="recipe"
-          className="mt-10 scroll-mt-4 rounded-lg border border-stone-200 bg-white p-5 sm:p-8"
-        >
-          <h2 className="text-2xl font-semibold text-stone-900">{recipe.title}</h2>
-
-          {facts.length > 0 && (
-            <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {facts.map(([label, value]) => (
-                <div key={label} className="rounded-md bg-stone-50 px-3 py-2">
-                  <dt className="text-xs uppercase tracking-wide text-stone-500">{label}</dt>
-                  <dd className="font-medium text-stone-900">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-
-          <h3 className="mt-8 text-lg font-semibold text-stone-900">Ingredients</h3>
-          <ul className="mt-3 space-y-2">
-            {recipe.ingredients.map((ing) => (
-              <li key={ing.position} className="flex gap-3 text-stone-800">
-                <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-600" />
-                {formatIngredient(ing)}
-              </li>
-            ))}
-          </ul>
-
-          <h3 className="mt-8 text-lg font-semibold text-stone-900">Steps</h3>
-          <ol className="mt-3 space-y-4">
-            {recipe.steps.map((step, i) => (
-              <li key={step.position} className="flex gap-4 text-stone-800">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-800">
-                  {i + 1}
-                </span>
-                <p className="pt-0.5 leading-relaxed">{step.text}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <div className="mt-10">
+          <RecipeDetails {...recipe} anchorId="recipe" />
+        </div>
       </article>
     </main>
   );

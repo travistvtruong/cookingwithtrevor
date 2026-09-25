@@ -1,17 +1,33 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatMinutes, totalMinutes, type RecipeSummary } from "@/lib/recipes";
+import { formatMinutes, totalMinutes } from "@/lib/recipes";
 
-export function RecipeCard({ recipe, preload }: { recipe: RecipeSummary; preload?: boolean }) {
+type CardRecipe = {
+  title: string;
+  slug: string;
+  photo_url: string | null;
+  prep_min: number | null;
+  cook_min: number | null;
+  tags: string[];
+};
+
+type Props = {
+  recipe: CardRecipe;
+  href?: string;
+  badge?: string;
+  preload?: boolean;
+};
+
+export function RecipeCard({ recipe, href, badge, preload }: Props) {
   const total = totalMinutes(recipe);
 
   return (
     <Link
-      href={`/recipes/${recipe.slug}`}
+      href={href ?? `/recipes/${recipe.slug}`}
       className="group block overflow-hidden rounded-lg border border-stone-200 bg-white"
     >
       <div className="relative aspect-[4/3] bg-stone-100">
-        {recipe.photo_url && (
+        {recipe.photo_url ? (
           <Image
             src={recipe.photo_url}
             alt=""
@@ -20,6 +36,15 @@ export function RecipeCard({ recipe, preload }: { recipe: RecipeSummary; preload
             sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
+        ) : (
+          <div className="flex h-full items-center justify-center text-4xl text-stone-300" aria-hidden>
+            🍳
+          </div>
+        )}
+        {badge && (
+          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-stone-700">
+            {badge}
+          </span>
         )}
       </div>
       <div className="space-y-1 p-4">

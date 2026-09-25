@@ -1,28 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { RecipeForm } from "@/components/recipe-form";
 import { requireAdmin } from "@/lib/auth";
-import { formatIngredient } from "@/lib/ingredients";
-import { RecipeForm } from "../../recipe-form";
+import { toFormValues } from "@/lib/recipe-form";
+import { getOwnRecipe } from "@/lib/recipes";
+import { deleteRecipe, saveRecipe } from "../../actions";
 
 export default async function EditRecipePage({ params }: PageProps<"/admin/[id]/edit">) {
   const { id } = await params;
   const { supabase, userId } = await requireAdmin();
-
-  const { data: recipe } = await supabase
-    .from("recipes")
-    .select(
-      `id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, is_public,
-       ingredients (position, quantity, unit, name),
-       steps (position, text)`,
-    )
-    .eq("id", id)
-    .eq("author_id", userId)
-    .order("position", { referencedTable: "ingredients" })
-    .order("position", { referencedTable: "steps" })
-    .maybeSingle();
+  const recipe = await getOwnRecipe(supabase, id, userId);
   if (!recipe) notFound();
-
-  const num = (n: number | null) => (n == null ? "" : String(n));
 
   return (
     <main className="max-w-2xl">
@@ -46,21 +34,12 @@ export default async function EditRecipePage({ params }: PageProps<"/admin/[id]/
         )}
       </div>
       <RecipeForm
+        variant="post"
+        action={saveRecipe}
+        deleteAction={deleteRecipe.bind(null, recipe.id, recipe.slug)}
         id={recipe.id}
         savedSlug={recipe.slug}
-        initial={{
-          title: recipe.title,
-          slug: recipe.slug,
-          intro: recipe.intro,
-          photo_url: recipe.photo_url ?? "",
-          prep_min: num(recipe.prep_min),
-          cook_min: num(recipe.cook_min),
-          servings: num(recipe.servings),
-          tags: recipe.tags.join(", "),
-          ingredients: recipe.ingredients.map(formatIngredient).join("\n"),
-          steps: recipe.steps.map((s: { text: string }) => s.text).join("\n"),
-          is_public: recipe.is_public,
-        }}
+        initial={toFormValues(recipe)}
       />
     </main>
   );

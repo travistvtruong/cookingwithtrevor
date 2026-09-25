@@ -1,26 +1,26 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import type { RecipeFormState, RecipeFormValues } from "@/lib/recipe-form";
 import { slugify } from "@/lib/slugify";
-import {
-  deleteRecipe,
-  saveRecipe,
-  type RecipeFormState,
-  type RecipeFormValues,
-} from "./actions";
 import { PhotoUpload } from "./photo-upload";
 
 const inputClass =
   "w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30 aria-[invalid=true]:border-red-600";
 
 type Props = {
+  // "post": blog post (URL, photo, publish buttons). "private": a library recipe.
+  variant: "post" | "private";
+  action: (state: RecipeFormState, formData: FormData) => Promise<RecipeFormState>;
+  deleteAction?: () => Promise<void>;
   id?: string;
   savedSlug?: string;
   initial: RecipeFormValues;
 };
 
-export function RecipeForm({ id, savedSlug, initial }: Props) {
-  const [state, formAction, pending] = useActionState<RecipeFormState, FormData>(saveRecipe, {});
+export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial }: Props) {
+  const isPost = variant === "post";
+  const [state, formAction, pending] = useActionState(action, {});
   const values = state.values ?? initial;
   const errors = state.fieldErrors ?? {};
   // Button labels follow the saved status, not an unsaved attempt.
@@ -54,34 +54,42 @@ export function RecipeForm({ id, savedSlug, initial }: Props) {
           {...field("title")}
           defaultValue={values.title}
           required
-          onChange={(e) => !slugTouched && setSlug(slugify(e.target.value))}
+          onChange={(e) => isPost && !slugTouched && setSlug(slugify(e.target.value))}
           className={inputClass}
         />
         {errorText("title")}
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor="slug" className="text-sm font-medium text-stone-700">URL</label>
-        <div className="flex items-center rounded-md">
-          <span className="mr-1 shrink-0 text-sm text-stone-500">/recipes/</span>
-          <input
-            {...field("slug")}
-            value={slug}
-            onChange={(e) => {
-              setSlug(e.target.value);
-              setSlugTouched(true);
-            }}
-            className={inputClass}
-          />
-        </div>
-        {errorText("slug")}
-      </div>
+      {isPost && (
+        <>
+          <div className="space-y-1">
+            <label htmlFor="slug" className="text-sm font-medium text-stone-700">URL</label>
+            <div className="flex items-center rounded-md">
+              <span className="mr-1 shrink-0 text-sm text-stone-500">/recipes/</span>
+              <input
+                {...field("slug")}
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value);
+                  setSlugTouched(true);
+                }}
+                className={inputClass}
+              />
+            </div>
+            {errorText("slug")}
+          </div>
 
-      <PhotoUpload defaultUrl={values.photo_url} error={errors.photo_url} />
+          <PhotoUpload defaultUrl={values.photo_url} error={errors.photo_url} />
+        </>
+      )}
 
       <div className="space-y-1">
-        <label htmlFor="intro" className="text-sm font-medium text-stone-700">Intro</label>
-        <p className="text-xs text-stone-500">Keep it short. Leave a blank line between paragraphs.</p>
+        <label htmlFor="intro" className="text-sm font-medium text-stone-700">
+          {isPost ? "Intro" : "Description"}
+        </label>
+        <p className="text-xs text-stone-500">
+          {isPost ? "Keep it short. Leave a blank line between paragraphs." : "Optional."}
+        </p>
         <textarea {...field("intro")} defaultValue={values.intro} rows={4} className={inputClass} />
         {errorText("intro")}
       </div>
@@ -147,38 +155,49 @@ export function RecipeForm({ id, savedSlug, initial }: Props) {
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 pt-6">
-        {/* Publish comes first so pressing Enter in a field publishes, matching the main action. */}
-        <div className="flex flex-wrap items-center gap-3">
+        {isPost ? (
+          // Publish comes first so pressing Enter in a field publishes, matching the main action.
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              name="intent"
+              value="publish"
+              disabled={pending}
+              className="rounded-md bg-orange-600 px-5 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
+            >
+              {pending ? "Saving…" : isPublished ? "Update post" : "Publish"}
+            </button>
+            <button
+              type="submit"
+              name="intent"
+              value="draft"
+              disabled={pending}
+              className="rounded-md border border-stone-300 bg-white px-5 py-2.5 font-medium text-stone-800 hover:bg-stone-50 disabled:opacity-60"
+            >
+              {isPublished ? "Unpublish" : "Save draft"}
+            </button>
+          </div>
+        ) : (
           <button
             type="submit"
-            name="intent"
-            value="publish"
             disabled={pending}
             className="rounded-md bg-orange-600 px-5 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
           >
-            {pending ? "Saving…" : isPublished ? "Update post" : "Publish"}
+            {pending ? "Saving…" : "Save recipe"}
           </button>
-          <button
-            type="submit"
-            name="intent"
-            value="draft"
-            disabled={pending}
-            className="rounded-md border border-stone-300 bg-white px-5 py-2.5 font-medium text-stone-800 hover:bg-stone-50 disabled:opacity-60"
-          >
-            {isPublished ? "Unpublish" : "Save draft"}
-          </button>
-        </div>
-        {id && savedSlug && (
+        )}
+        {deleteAction && (
           <button
             type="button"
             onClick={async () => {
-              if (confirm("Delete this post permanently? This can't be undone.")) {
-                await deleteRecipe(id, savedSlug);
+              const what = isPost ? "post" : "recipe";
+              if (confirm(`Delete this ${what} permanently? This can't be undone.`)) {
+                await deleteAction();
               }
             }}
             className="text-sm font-medium text-red-700 hover:underline"
           >
-            Delete post
+            {isPost ? "Delete post" : "Delete recipe"}
           </button>
         )}
       </div>
