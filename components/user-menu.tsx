@@ -48,6 +48,9 @@ export function UserMenu() {
       <Link href="/library" className="font-medium text-stone-800 hover:text-orange-700">
         Library
       </Link>
+      <Link href="/grocery" className="font-medium text-stone-800 hover:text-orange-700">
+        Lists
+      </Link>
       <span className="hidden max-w-40 truncate text-stone-600 sm:inline">{email}</span>
       <button type="button" onClick={handleSignOut} className="font-medium text-orange-700 hover:underline">
         Sign out

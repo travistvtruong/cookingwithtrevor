@@ -38,12 +38,22 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:py-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold tracking-tight text-stone-900">My library</h1>
-        <Link
-          href="/library/new"
-          className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
-        >
-          Add a recipe
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {library.length > 0 && (
+            <Link
+              href="/grocery/new"
+              className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
+            >
+              Make a grocery list
+            </Link>
+          )}
+          <Link
+            href="/library/new"
+            className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+          >
+            Add a recipe
+          </Link>
+        </div>
       </div>
 
       {library.length === 0 ? (

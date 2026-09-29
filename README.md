@@ -50,6 +50,7 @@ app/                 routes (one folder per feature)
   recipes/[slug]/    public recipe post (cached, rebuilt on save)
   admin/             author dashboard: list, create, edit, delete posts
   library/           personal library: saved and private recipes, search, notes
+  grocery/           grocery lists: combine recipes, check items off
 components/          shared UI
 lib/supabase/        Supabase clients (browser, server, proxy)
 proxy.ts             refreshes auth sessions; guards /library, /grocery, /admin

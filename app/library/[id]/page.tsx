@@ -73,6 +73,12 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
             View blog post
           </Link>
         )}
+        <Link
+          href={`/grocery/new?recipe=${recipe.id}`}
+          className="font-medium text-orange-700 hover:underline"
+        >
+          Make grocery list
+        </Link>
         {recipe.tags.length > 0 && <span className="text-stone-600">{recipe.tags.join(" · ")}</span>}
       </div>
 
