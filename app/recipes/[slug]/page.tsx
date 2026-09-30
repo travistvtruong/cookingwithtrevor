@@ -69,7 +69,7 @@ export default async function RecipePage({ params }: PageProps<"/recipes/[slug]"
           <div className="flex flex-wrap items-center gap-3">
             <a
               href="#recipe"
-              className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+              className="rounded-md bg-orange-700 px-4 py-2 text-sm font-medium text-white hover:bg-orange-800"
             >
               Jump to recipe ↓
             </a>

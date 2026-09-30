@@ -49,7 +49,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
           )}
           <Link
             href="/library/new"
-            className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+            className="rounded-md bg-orange-700 px-4 py-2 text-sm font-medium text-white hover:bg-orange-800"
           >
             Add a recipe
           </Link>
@@ -101,7 +101,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
                   aria-current={t === tag ? "true" : undefined}
                   className={
                     t === tag
-                      ? "rounded-full bg-orange-600 px-3 py-1 text-sm text-white"
+                      ? "rounded-full bg-orange-700 px-3 py-1 text-sm text-white"
                       : "rounded-full border border-stone-300 bg-white px-3 py-1 text-sm text-stone-700 hover:bg-stone-50"
                   }
                 >

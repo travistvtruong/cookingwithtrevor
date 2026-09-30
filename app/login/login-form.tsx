@@ -63,7 +63,7 @@ export function LoginForm({ next, initialState }: { next: string; initialState: 
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-md bg-orange-600 px-4 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
+          className="w-full rounded-md bg-orange-700 px-4 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
         >
           {pending ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
         </button>

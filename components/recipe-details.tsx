@@ -43,7 +43,7 @@ export function RecipeDetails({ anchorId, title, prep_min, cook_min, servings, i
       <ul className="mt-3 space-y-2">
         {ingredients.map((ing) => (
           <li key={ing.position} className="flex gap-3 text-stone-800">
-            <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-600" />
+            <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-700" />
             {formatIngredient(ing)}
           </li>
         ))}

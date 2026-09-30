@@ -57,7 +57,7 @@ export function NewListForm({ recipes, preselected }: { recipes: Option[]; prese
       <button
         type="submit"
         disabled={pending || selected.size === 0}
-        className="w-full rounded-md bg-orange-600 px-5 py-3 font-medium text-white hover:bg-orange-700 disabled:opacity-60 sm:w-auto"
+        className="w-full rounded-md bg-orange-700 px-5 py-3 font-medium text-white hover:bg-orange-800 disabled:opacity-60 sm:w-auto"
       >
         {pending
           ? "Making your list…"

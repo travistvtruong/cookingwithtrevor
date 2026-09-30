@@ -168,7 +168,7 @@ function ReviewForm({ recipeId, slug, existing }: { recipeId: string; slug: stri
         <button
           type="submit"
           disabled={pending || stars === 0}
-          className="rounded-md bg-orange-600 px-5 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
+          className="rounded-md bg-orange-700 px-5 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
         >
           {pending ? "Saving…" : existing ? "Update review" : "Post review"}
         </button>

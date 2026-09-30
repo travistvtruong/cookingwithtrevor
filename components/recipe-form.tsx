@@ -164,7 +164,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
               name="intent"
               value="publish"
               disabled={pending}
-              className="rounded-md bg-orange-600 px-5 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
+              className="rounded-md bg-orange-700 px-5 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
             >
               {pending ? "Saving…" : isPublished ? "Update post" : "Publish"}
             </button>
@@ -182,7 +182,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
           <button
             type="submit"
             disabled={pending}
-            className="rounded-md bg-orange-600 px-5 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
+            className="rounded-md bg-orange-700 px-5 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
           >
             {pending ? "Saving…" : "Save recipe"}
           </button>
