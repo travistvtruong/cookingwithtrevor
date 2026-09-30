@@ -49,8 +49,18 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
     return b;
   }
 
+  const storageRemove = vi.fn(async (_paths: string[]) => ({ data: [], error: null as { message: string } | null }));
+
   const client = {
     from: (table: string) => builder({ table, op: "select", filters: [] }),
+    storage: {
+      from: (bucket: string) => ({
+        remove: (paths: string[]) => {
+          calls.push({ table: `storage:${bucket}`, op: "delete", payload: paths, filters: [] });
+          return storageRemove(paths);
+        },
+      }),
+    },
     rpc: (name: string, args: unknown) => builder({ rpc: name, op: "rpc", payload: args, filters: [] }),
     auth: {
       getClaims: vi.fn(async () => ({ data: { claims: { sub: "user-1" } }, error: null })),
@@ -61,7 +71,7 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
     },
   };
 
-  return { client, calls };
+  return { client, calls, storageRemove };
 }
 
 // next/navigation's redirect() and notFound() throw to stop rendering; mirror that.
