@@ -49,7 +49,9 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
     return b;
   }
 
-  const storageRemove = vi.fn(async (_paths: string[]) => ({ data: [], error: null as { message: string } | null }));
+  const storageRemove = vi.fn<(paths: string[]) => Promise<{ data: unknown[]; error: { message: string } | null }>>(
+    async () => ({ data: [], error: null }),
+  );
 
   const client = {
     from: (table: string) => builder({ table, op: "select", filters: [] }),
