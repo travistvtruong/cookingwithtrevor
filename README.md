@@ -56,7 +56,19 @@ components/          shared UI
 lib/supabase/        Supabase clients (browser, server, proxy)
 proxy.ts             refreshes auth sessions; guards /library, /grocery, /admin
 supabase/migrations/ database schema and row-level security policies
+tests/               Vitest unit tests and Server Action flow tests
 ```
+
+## Tests
+
+```
+npm test             # run once
+npm run test:watch   # re-run on save
+```
+
+- **Unit tests** cover the ingredient parser, grocery-list merging, slugs, the post-login redirect guard and site-URL handling.
+- **Flow tests** (`tests/flows/`) run the real Server Actions for sign-up, creating recipes, grocery lists, ratings/comments and photo cleanup against a recording fake Supabase client, so they never touch a real database.
+- Database rules (RLS, triggers) aren't covered: that needs a separate test Supabase project.
 
 ## Security
 
