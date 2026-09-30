@@ -22,6 +22,7 @@ type Props = {
 export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial }: Props) {
   const isPost = variant === "post";
   const [state, formAction, pending] = useActionState(action, {});
+  const [photoBusy, setPhotoBusy] = useState(false);
   const values = state.values ?? initial;
   const errors = state.fieldErrors ?? {};
   // Button labels follow the saved status, not an unsaved attempt.
@@ -80,7 +81,11 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
             {errorText("slug")}
           </div>
 
-          <PhotoUpload defaultUrl={values.photo_url} error={errors.photo_url} />
+          <PhotoUpload
+            defaultUrl={values.photo_url}
+            error={errors.photo_url}
+            onBusyChange={setPhotoBusy}
+          />
         </>
       )}
 
@@ -163,7 +168,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
               type="submit"
               name="intent"
               value="publish"
-              disabled={pending}
+              disabled={pending || photoBusy}
               className="rounded-md bg-orange-700 px-5 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
             >
               {pending ? "Saving…" : isPublished ? "Update post" : "Publish"}
@@ -172,7 +177,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
               type="submit"
               name="intent"
               value="draft"
-              disabled={pending}
+              disabled={pending || photoBusy}
               className="rounded-md border border-stone-300 bg-white px-5 py-2.5 font-medium text-stone-800 hover:bg-stone-50 disabled:opacity-60"
             >
               {isPublished ? "Unpublish" : "Save draft"}
@@ -181,7 +186,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
         ) : (
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || photoBusy}
             className="rounded-md bg-orange-700 px-5 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
           >
             {pending ? "Saving…" : "Save recipe"}
