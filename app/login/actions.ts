@@ -3,10 +3,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
+import { siteUrl } from "@/lib/site-url";
 
 export type AuthState = { error?: string; message?: string };
 
-const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 function readCredentials(formData: FormData) {
   return {
