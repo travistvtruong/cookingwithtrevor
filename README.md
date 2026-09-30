@@ -28,12 +28,13 @@ That signs users in from any browser or device via `/auth/confirm`.
 
 ### Make yourself the admin
 
-Sign up on the site, then run this in the Supabase SQL Editor:
+After running the migrations, add your email (lowercase) to the private admin list in the Supabase SQL Editor:
 
 ```sql
-update public.profiles set role = 'admin'
-where id = (select id from auth.users where email = 'you@example.com');
+insert into public.admin_emails (email) values ('you@example.com');
 ```
+
+That account becomes admin now (if it exists and is confirmed) and automatically whenever it signs in with a confirmed email in future, even if the account is recreated. The list is not readable through the site's API, and it's kept out of this repo so the email isn't published.
 
 ### Google sign-in
 

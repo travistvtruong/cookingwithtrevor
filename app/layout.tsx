@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     default: "cookingwithtrevor",
     template: "%s · cookingwithtrevor",
   },
-  description: "Recipes without the life story, plus a personal recipe library and grocery lists.",
+  description: "Recipes, plus a personal recipe library and grocery lists.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

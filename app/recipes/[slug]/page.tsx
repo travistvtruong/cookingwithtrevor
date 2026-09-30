@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps<"/recipes/[slug]">)
   const recipe = await getPublishedRecipe(slug);
   if (!recipe) return {};
 
-  const description = recipe.intro.split(/\n\s*\n/)[0].slice(0, 160);
+  const description = summary(recipe);
   return {
     title: recipe.title,
     description,
@@ -84,7 +84,8 @@ export default async function RecipePage({ params }: PageProps<"/recipes/[slug]"
               alt={recipe.title}
               fill
               preload
-              sizes="(min-width: 768px) 736px, 100vw"
+              fetchPriority="high"
+              sizes="(min-width: 768px) 736px, calc(100vw - 32px)"
               className="object-cover"
             />
           </div>
@@ -121,7 +122,7 @@ function jsonLd(recipe: Recipe) {
     "@context": "https://schema.org",
     "@type": "Recipe",
     name: recipe.title,
-    description: recipe.intro.split(/\n\s*\n/)[0],
+    description: summary(recipe),
     image: recipe.photo_url ? [recipe.photo_url] : undefined,
     datePublished: recipe.published_at ?? undefined,
     prepTime: iso(recipe.prep_min),
@@ -137,4 +138,21 @@ function jsonLd(recipe: Recipe) {
   };
   // Escape "<" so recipe text can never close the script tag.
   return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+// Search-result description: the intro's first paragraph, or one built from the
+// recipe when there's no intro (e.g. "Mango Cheesecake recipe with 8 ingredients, ready in 1 hr 20 min.").
+function summary(recipe: Recipe) {
+  const intro = recipe.intro.split(/\n\s*\n/)[0].trim();
+  if (intro) return intro.length > 160 ? `${intro.slice(0, 157).trimEnd()}…` : intro;
+
+  const total = totalMinutes(recipe);
+  const count = recipe.ingredients.length;
+  return [
+    `${recipe.title} recipe with ${count} ingredient${count === 1 ? "" : "s"}`,
+    total && `, ready in ${formatMinutes(total)}`,
+    ".",
+  ]
+    .filter(Boolean)
+    .join("");
 }

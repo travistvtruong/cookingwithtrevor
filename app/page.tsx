@@ -11,7 +11,7 @@ export default async function Home() {
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:py-14">
       <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
-        Recipes, minus the life story.
+        Recipes
       </h1>
 
       {recipes.length === 0 ? (
