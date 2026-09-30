@@ -18,7 +18,7 @@ A food blog and personal recipe tracker: read and rate recipes, save them to you
 
 Works out of the box with Supabase's default email. If a user opens the link in a different browser than the one they signed up in, their email is still confirmed and they're asked to sign in.
 
-**Before launch:** Supabase's built-in email only delivers to your own team's addresses. Set up custom SMTP (for example Resend, with your domain) in Supabase > Project Settings > Authentication > SMTP. Then, in Authentication > Emails > Confirm signup, replace the link with:
+**Before launch:** Supabase's built-in email only delivers to your own team's addresses. Set up custom SMTP in Supabase > Authentication > Emails > SMTP Settings. This project uses Gmail (`smtp.gmail.com`, port 465, a dedicated Gmail account and an [app password](https://myaccount.google.com/apppasswords)); a custom domain with a service like Resend delivers better. Then, in Authentication > Emails > Confirm signup, replace the link with:
 
 ```html
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Confirm your email</a>
