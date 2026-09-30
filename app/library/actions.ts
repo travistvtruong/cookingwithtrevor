@@ -16,7 +16,8 @@ export async function saveMyRecipe(
 ): Promise<RecipeFormState> {
   const { supabase } = await requireUser();
   const id = String(formData.get("id") ?? "") || null;
-  const values = readRecipeForm(formData);
+  // Private recipes have no photo (uploads are admin-only); ignore any sent.
+  const values = { ...readRecipeForm(formData), photo_url: "" };
 
   const result = validateRecipe(values);
   if ("state" in result) return result.state;
