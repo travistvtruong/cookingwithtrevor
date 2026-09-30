@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import type { RecipeFormState, RecipeFormValues } from "@/lib/recipe-form";
 import { slugify } from "@/lib/slugify";
+import { DeleteButton } from "./delete-button";
 import { PhotoUpload } from "./photo-upload";
 
 const inputClass =
@@ -12,7 +13,7 @@ type Props = {
   // "post": blog post (URL, photo, publish buttons). "private": a library recipe.
   variant: "post" | "private";
   action: (state: RecipeFormState, formData: FormData) => Promise<RecipeFormState>;
-  deleteAction?: () => Promise<void>;
+  deleteAction?: () => Promise<{ error?: string }>;
   id?: string;
   savedSlug?: string;
   initial: RecipeFormValues;
@@ -187,18 +188,11 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
           </button>
         )}
         {deleteAction && (
-          <button
-            type="button"
-            onClick={async () => {
-              const what = isPost ? "post" : "recipe";
-              if (confirm(`Delete this ${what} permanently? This can't be undone.`)) {
-                await deleteAction();
-              }
-            }}
-            className="text-sm font-medium text-red-700 hover:underline"
-          >
-            {isPost ? "Delete post" : "Delete recipe"}
-          </button>
+          <DeleteButton
+            action={deleteAction}
+            label={isPost ? "Delete post" : "Delete recipe"}
+            confirmMessage={`Delete this ${isPost ? "post" : "recipe"} permanently? This can't be undone.`}
+          />
         )}
       </div>
     </form>

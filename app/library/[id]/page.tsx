@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ConfirmSubmit } from "@/components/confirm-submit";
+import { DeleteButton } from "@/components/delete-button";
 import { RecipeDetails } from "@/components/recipe-details";
 import { requireUser } from "@/lib/auth";
 import type { Ingredient } from "@/lib/ingredients";
@@ -98,23 +98,21 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
         <NotesForm recipeId={recipe.id} notes={data.notes} />
       </div>
 
-      <form
-        action={isOwnPrivate ? deleteMyRecipe.bind(null, recipe.id) : removeFromLibrary.bind(null, recipe.id)}
-        className="mt-10 border-t border-stone-200 pt-6"
-      >
+      <div className="mt-10 border-t border-stone-200 pt-6">
         {isOwnPrivate ? (
-          <ConfirmSubmit
-            message="Delete this recipe permanently? This can't be undone."
-            className="text-sm font-medium text-red-700 hover:underline"
-          >
-            Delete recipe
-          </ConfirmSubmit>
+          <DeleteButton
+            action={deleteMyRecipe.bind(null, recipe.id)}
+            label="Delete recipe"
+            confirmMessage="Delete this recipe permanently? This can't be undone."
+          />
         ) : (
-          <button type="submit" className="text-sm font-medium text-red-700 hover:underline">
-            Remove from library
-          </button>
+          <form action={removeFromLibrary.bind(null, recipe.id)}>
+            <button type="submit" className="text-sm font-medium text-red-700 hover:underline">
+              Remove from library
+            </button>
+          </form>
         )}
-      </form>
+      </div>
     </main>
   );
 }

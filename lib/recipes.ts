@@ -19,11 +19,24 @@ export type RecipeSummary = {
   updated_at: string;
 };
 
+export type Review = {
+  id: string;
+  user_id: string;
+  stars: number;
+  comment: string;
+  created_at: string;
+  author: string;
+};
+
 export type Recipe = RecipeSummary & {
   ingredients: (Ingredient & { position: number })[];
   steps: { position: number; text: string }[];
   rating: { average: number; count: number } | null;
+  reviews: Review[];
 };
+
+// Newest reviews shown on a post; the average and count cover all of them.
+const REVIEWS_SHOWN = 50;
 
 const SUMMARY_FIELDS =
   "id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, published_at, updated_at";
@@ -56,13 +69,25 @@ export const getPublishedRecipe = cache(async (slug: string): Promise<Recipe | n
   if (error) throw error;
   if (!data) return null;
 
-  const { data: rating } = await supabase
-    .from("recipe_ratings")
-    .select("average, count")
-    .eq("recipe_id", data.id)
-    .maybeSingle();
+  const [{ data: rating }, { data: reviews, error: reviewsError }] = await Promise.all([
+    supabase.from("recipe_ratings").select("average, count").eq("recipe_id", data.id).maybeSingle(),
+    supabase
+      .from("ratings_comments")
+      .select("id, user_id, stars, comment, created_at, profiles (name)")
+      .eq("recipe_id", data.id)
+      .order("created_at", { ascending: false })
+      .limit(REVIEWS_SHOWN),
+  ]);
+  if (reviewsError) throw reviewsError;
 
-  return { ...data, rating: rating ?? null };
+  return {
+    ...data,
+    rating: rating ?? null,
+    reviews: (reviews ?? []).map(({ profiles, ...r }) => ({
+      ...r,
+      author: (profiles as unknown as { name: string } | null)?.name || "A reader",
+    })),
+  };
 });
 
 // A recipe the signed-in user wrote, with ingredients and steps, for editing.

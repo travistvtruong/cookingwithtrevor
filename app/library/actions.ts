@@ -44,15 +44,17 @@ export async function saveMyRecipe(
   redirect(`/library/${data.id}`);
 }
 
-export async function deleteMyRecipe(id: string) {
+export async function deleteMyRecipe(id: string): Promise<{ error?: string }> {
   const { supabase, userId } = await requireUser();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("recipes")
     .delete()
     .eq("id", id)
     .eq("author_id", userId)
-    .eq("is_public", false);
-  if (error) throw error;
+    .eq("is_public", false)
+    .select("id");
+  if (error) return { error: `Could not delete the recipe: ${error.message}` };
+  if (!data.length) return { error: "Could not delete the recipe: it wasn't found or you don't own it." };
 
   revalidatePath("/library");
   redirect("/library");

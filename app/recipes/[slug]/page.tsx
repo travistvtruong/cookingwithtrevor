@@ -5,9 +5,11 @@ import { RecipeDetails } from "@/components/recipe-details";
 import { SaveButton } from "@/components/save-button";
 import { formatIngredient } from "@/lib/ingredients";
 import { formatMinutes, getPublishedRecipe, totalMinutes, type Recipe } from "@/lib/recipes";
+import { Reviews } from "./reviews";
 
 // Pages are built on first visit, cached, and rebuilt when the post is saved.
-export const revalidate = 3600;
+// The 60s refresh picks up changes made on another server or in the database.
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   return [];
@@ -53,9 +55,13 @@ export default async function RecipePage({ params }: PageProps<"/recipes/[slug]"
           </h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-stone-600">
             {recipe.rating && (
-              <span aria-label={`Rated ${recipe.rating.average} out of 5`}>
+              <a
+                href="#reviews"
+                aria-label={`Rated ${recipe.rating.average} out of 5 from ${recipe.rating.count} ratings`}
+                className="hover:underline"
+              >
                 <span className="text-orange-600">★</span> {recipe.rating.average} ({recipe.rating.count})
-              </span>
+              </a>
             )}
             {total && <span>{formatMinutes(total)}</span>}
             {recipe.tags.length > 0 && <span>{recipe.tags.join(" · ")}</span>}
@@ -95,6 +101,13 @@ export default async function RecipePage({ params }: PageProps<"/recipes/[slug]"
         <div className="mt-10">
           <RecipeDetails {...recipe} anchorId="recipe" />
         </div>
+
+        <Reviews
+          recipeId={recipe.id}
+          slug={recipe.slug}
+          reviews={recipe.reviews}
+          rating={recipe.rating}
+        />
       </article>
     </main>
   );

@@ -1,8 +1,9 @@
 import { RecipeCard } from "@/components/recipe-card";
 import { getPublishedRecipes } from "@/lib/recipes";
 
-// Rebuilt on demand when a post is saved; this is a fallback refresh.
-export const revalidate = 3600;
+// Rebuilt on demand when a post is saved on this server; the 60s refresh also
+// picks up changes made elsewhere (another deployment, local dev, the database).
+export const revalidate = 60;
 
 export default async function Home() {
   const recipes = await getPublishedRecipes();

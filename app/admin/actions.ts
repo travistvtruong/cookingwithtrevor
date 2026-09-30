@@ -47,10 +47,12 @@ export async function saveRecipe(
   redirect("/admin");
 }
 
-export async function deleteRecipe(id: string, slug: string) {
+export async function deleteRecipe(id: string, slug: string): Promise<{ error?: string }> {
   const { supabase } = await requireAdmin();
-  const { error } = await supabase.from("recipes").delete().eq("id", id);
-  if (error) throw error;
+  // RLS blocks silently (0 rows, no error), so check that a row was actually deleted.
+  const { data, error } = await supabase.from("recipes").delete().eq("id", id).select("id");
+  if (error) return { error: `Could not delete the post: ${error.message}` };
+  if (!data.length) return { error: "Could not delete the post: it wasn't found or you don't own it." };
 
   revalidatePath("/");
   revalidatePath(`/recipes/${slug}`);
