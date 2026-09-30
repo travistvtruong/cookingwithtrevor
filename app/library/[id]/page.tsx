@@ -91,7 +91,7 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
       )}
 
       <div className="mt-6">
-        <RecipeDetails {...recipe} />
+        <RecipeDetails {...recipe} titleAs="h1" />
       </div>
 
       <div className="mt-8">

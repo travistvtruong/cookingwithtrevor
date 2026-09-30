@@ -9,10 +9,21 @@ type Props = {
   ingredients: (Ingredient & { position: number })[];
   steps: { position: number; text: string }[];
   anchorId?: string; // target for the "Jump to recipe" link
+  // h1 when the recipe is the page itself (library); h2 under a post's own h1.
+  titleAs?: "h1" | "h2";
 };
 
 // The recipe card: times, ingredients and numbered steps.
-export function RecipeDetails({ anchorId, title, prep_min, cook_min, servings, ingredients, steps }: Props) {
+export function RecipeDetails({
+  anchorId,
+  titleAs: Title = "h2",
+  title,
+  prep_min,
+  cook_min,
+  servings,
+  ingredients,
+  steps,
+}: Props) {
   const total = totalMinutes({ prep_min, cook_min });
   const facts = [
     prep_min != null && ["Prep", formatMinutes(prep_min)],
@@ -26,7 +37,7 @@ export function RecipeDetails({ anchorId, title, prep_min, cook_min, servings, i
       id={anchorId}
       className="scroll-mt-4 rounded-lg border border-stone-200 bg-white p-5 sm:p-8"
     >
-      <h2 className="text-2xl font-semibold text-stone-900">{title}</h2>
+      <Title className="text-2xl font-semibold text-stone-900">{title}</Title>
 
       {facts.length > 0 && (
         <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">

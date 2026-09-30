@@ -45,7 +45,7 @@ export function Checklist({ initialItems }: { initialItems: Item[] }) {
           onChange={() => toggle(item.id)}
           className="h-6 w-6 shrink-0 accent-orange-600"
         />
-        <span className={item.checked ? "text-stone-400 line-through" : "text-lg text-stone-900"}>
+        <span className={item.checked ? "text-stone-500 line-through" : "text-lg text-stone-900"}>
           {formatIngredient(item)}
         </span>
       </label>

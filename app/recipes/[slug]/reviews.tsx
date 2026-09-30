@@ -141,7 +141,7 @@ function ReviewForm({ recipeId, slug, existing }: { recipeId: string; slug: stri
                 onChange={() => setStars(n)}
                 className="sr-only"
               />
-              <span aria-hidden className={n <= shown ? "text-orange-600" : "text-stone-300"}>★</span>
+              <span aria-hidden className={n <= shown ? "text-orange-600" : "text-stone-500"}>{n <= shown ? "★" : "☆"}</span>
               <span className="sr-only">{n} {n === 1 ? "star" : "stars"}</span>
             </label>
           ))}
