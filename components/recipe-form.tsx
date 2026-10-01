@@ -17,9 +17,10 @@ type Props = {
   id?: string;
   savedSlug?: string;
   initial: RecipeFormValues;
+  photoPreview?: string; // signed URL for an existing private photo
 };
 
-export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial }: Props) {
+export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial, photoPreview }: Props) {
   const isPost = variant === "post";
   const [state, formAction, pending] = useActionState(action, {});
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -80,14 +81,16 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
             </div>
             {errorText("slug")}
           </div>
-
-          <PhotoUpload
-            defaultUrl={values.photo_url}
-            error={errors.photo_url}
-            onBusyChange={setPhotoBusy}
-          />
         </>
       )}
+
+      <PhotoUpload
+        mode={isPost ? "public" : "private"}
+        defaultUrl={values.photo_url}
+        defaultPreview={photoPreview}
+        error={errors.photo_url}
+        onBusyChange={setPhotoBusy}
+      />
 
       <div className="space-y-1">
         <label htmlFor="intro" className="text-sm font-medium text-stone-700">

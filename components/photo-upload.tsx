@@ -10,19 +10,26 @@ const MAX_ORIGINAL_BYTES = 40 * 1024 * 1024;
 
 type Status = "idle" | "resizing" | "uploading";
 
-// Photo section of the post form. Resizes on the device, then uploads straight
-// to Supabase Storage (admin-only by storage policy) and stores the public URL
-// in a hidden input submitted with the form.
+// Photo section of the recipe form. Resizes on the device, then uploads straight
+// to Supabase Storage and stores the result in a hidden "photo_url" input.
+// - "public" (blog posts): admin-only bucket; stores the public URL.
+// - "private" (library recipes): the user's own folder in a private bucket;
+//   stores the path, and previews via a signed URL or the local file.
 export function PhotoUpload({
+  mode = "public",
   defaultUrl,
+  defaultPreview,
   error,
   onBusyChange,
 }: {
-  defaultUrl: string;
+  mode?: "public" | "private";
+  defaultUrl: string; // the stored value (public URL or private path)
+  defaultPreview?: string; // a loadable URL for private photos (signed)
   error?: string;
   onBusyChange?: (busy: boolean) => void; // lets the form hold off saving mid-upload
 }) {
   const [url, setUrl] = useState(defaultUrl);
+  const [preview, setPreview] = useState(mode === "private" ? defaultPreview ?? "" : defaultUrl);
   const [status, setStatusState] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
   const busy = status !== "idle";
@@ -52,8 +59,19 @@ export function PhotoUpload({
     }
 
     setStatus("uploading");
-    const path = `${crypto.randomUUID()}.jpg`;
-    const storage = createClient().storage.from("recipe-photos");
+    const supabase = createClient();
+    let path = `${crypto.randomUUID()}.jpg`;
+    if (mode === "private") {
+      // Storage policy: users may only write inside the folder named after their id.
+      const { data } = await supabase.auth.getSession();
+      const userId = data.session?.user.id;
+      if (!userId) {
+        setStatus("idle");
+        return setMessage("Your session expired. Sign in again to upload photos.");
+      }
+      path = `${userId}/${path}`;
+    }
+    const storage = supabase.storage.from(mode === "private" ? "user-photos" : "recipe-photos");
     const { error: uploadError } = await storage.upload(path, blob, {
       cacheControl: "31536000",
       contentType: "image/jpeg",
@@ -61,7 +79,14 @@ export function PhotoUpload({
     setStatus("idle");
     if (uploadError) return setMessage(`Upload failed: ${uploadError.message}`);
 
-    setUrl(storage.getPublicUrl(path).data.publicUrl);
+    if (mode === "private") {
+      setUrl(path);
+      setPreview(URL.createObjectURL(blob)); // show the local copy; no extra download
+    } else {
+      const publicUrl = storage.getPublicUrl(path).data.publicUrl;
+      setUrl(publicUrl);
+      setPreview(publicUrl);
+    }
   }
 
   const buttonClass =
@@ -75,19 +100,29 @@ export function PhotoUpload({
       <div>
         <h2 id="photo-heading" className="text-lg font-semibold text-stone-900">Photo</h2>
         <p className="text-sm text-stone-600">
-          The main photo at the top of the post. Landscape works best. It&apos;s resized on
-          your device and location data is removed before upload.
+          {mode === "private"
+            ? "Only you can see this photo. "
+            : "The main photo at the top of the post. Landscape works best. "}
+          It&apos;s resized on your device and location data is removed before upload.
         </p>
       </div>
 
       <input type="hidden" name="photo_url" value={url} />
 
       <div className="relative aspect-[3/2] w-full overflow-hidden rounded-md bg-stone-100">
-        {url ? (
-          <Image src={url} alt="Recipe photo preview" fill sizes="(min-width: 672px) 640px, 100vw" className="object-cover" />
+        {url && preview ? (
+          <Image
+            src={preview}
+            alt="Recipe photo preview"
+            fill
+            sizes="(min-width: 672px) 640px, 100vw"
+            // Private previews (signed or local URLs) bypass the shared image optimizer.
+            unoptimized={mode === "private"}
+            className="object-cover"
+          />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-stone-500">
-            No photo yet
+            {url ? "Photo saved (preview unavailable)" : "No photo yet"}
           </div>
         )}
         {busy && (
@@ -117,7 +152,10 @@ export function PhotoUpload({
         {url && !busy && (
           <button
             type="button"
-            onClick={() => setUrl("")}
+            onClick={() => {
+              setUrl("");
+              setPreview("");
+            }}
             className="min-h-11 px-2 text-sm text-stone-600 hover:underline"
           >
             Remove

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { isSignedPhotoUrl } from "@/lib/photos";
 import { formatMinutes, totalMinutes } from "@/lib/recipes";
 
 type CardRecipe = {
@@ -33,6 +34,7 @@ export function RecipeCard({ recipe, href, badge, preload }: Props) {
             alt=""
             fill
             preload={preload}
+            unoptimized={isSignedPhotoUrl(recipe.photo_url)}
             sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />

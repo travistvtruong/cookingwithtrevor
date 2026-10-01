@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { formatIngredient, parseIngredient, type Ingredient } from "@/lib/ingredients";
+import { isOwnPrivatePhoto, photoRef, PUBLIC_BUCKET } from "@/lib/photos";
 import { slugify } from "@/lib/slugify";
 
 // Shared by the author dashboard (blog posts) and the library (private recipes).
@@ -71,7 +72,6 @@ export function toFormValues(recipe: EditableRecipe): RecipeFormValues {
   };
 }
 
-const photoPrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/recipe-photos/`;
 
 const optionalInt = (min: number, max: number) =>
   z
@@ -98,7 +98,6 @@ const recipeSchema = z.object({
   photo_url: z
     .string()
     .trim()
-    .refine((v) => v === "" || v.startsWith(photoPrefix), "Upload the photo using the button.")
     .transform((v) => v || null),
   prep_min: optionalInt(0, 1440),
   cook_min: optionalInt(0, 1440),
@@ -137,10 +136,27 @@ export function readRecipeForm(formData: FormData): RecipeFormValues {
   };
 }
 
+// Which photos a form may point at: blog posts use the public bucket (admin
+// uploads); private recipes use the owner's own folder in the private bucket.
+export type PhotoRule = { kind: "public" } | { kind: "private"; userId: string };
+
+function photoAllowed(value: string, rule: PhotoRule) {
+  if (value === "") return true;
+  const ref = photoRef(value);
+  if (rule.kind === "public") return ref?.bucket === PUBLIC_BUCKET;
+  return isOwnPrivatePhoto(value, rule.userId);
+}
+
 export function validateRecipe(
   values: RecipeFormValues,
+  photoRule: PhotoRule = { kind: "public" },
 ): { data: ParsedRecipe } | { state: RecipeFormState } {
-  const parsed = recipeSchema.safeParse(values);
+  const parsed = recipeSchema
+    .refine((v) => photoAllowed(v.photo_url ?? "", photoRule), {
+      path: ["photo_url"],
+      message: "Upload the photo using the button.",
+    })
+    .safeParse(values);
   if (parsed.success) return { data: parsed.data };
 
   const fieldErrors: RecipeFormState["fieldErrors"] = {};

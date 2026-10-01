@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RedirectSignal, fakeSupabase, type Call } from "../fake-supabase";
-import { photoPath } from "@/lib/photos";
+import { photoPath, photoRef } from "@/lib/photos";
 
 const supabase = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => supabase.current }));
@@ -15,10 +15,24 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { deleteRecipe, saveRecipe } from "@/app/admin/actions";
+import { deleteMyRecipe, saveMyRecipe } from "@/app/library/actions";
 
 const BUCKET_URL = "https://test-project.supabase.co/storage/v1/object/public/recipe-photos/";
 const OLD = `${BUCKET_URL}old.jpg`;
 const NEW = `${BUCKET_URL}new.jpg`;
+
+const ME = "11111111-1111-4111-8111-111111111111";
+const PRIVATE_OLD = `${ME}/44444444-4444-4444-8444-444444444444.jpg`;
+const PRIVATE_NEW = `${ME}/55555555-5555-4555-8555-555555555555.jpg`;
+
+describe("photoRef", () => {
+  it("knows which bucket a stored photo lives in", () => {
+    expect(photoRef(OLD)).toEqual({ bucket: "recipe-photos", path: "old.jpg" });
+    expect(photoRef(PRIVATE_OLD)).toEqual({ bucket: "user-photos", path: PRIVATE_OLD });
+    expect(photoRef(`${ME}/not-a-uuid.jpg`)).toBeNull();
+    expect(photoRef(`${BUCKET_URL}nested/x.jpg`)).toBeNull();
+  });
+});
 
 describe("photoPath", () => {
   it("extracts the path for photos in our bucket only", () => {
@@ -97,5 +111,22 @@ describe("photo cleanup in the dashboard", () => {
     savedPhoto = "https://elsewhere.example/photo.jpg";
     await expect(deleteRecipe("recipe-1", "mango")).rejects.toBeInstanceOf(RedirectSignal);
     expect(fake.storageRemove).not.toHaveBeenCalled();
+  });
+});
+
+describe("photo cleanup for private library recipes", () => {
+  beforeEach(() => {
+    savedPhoto = PRIVATE_OLD;
+    fake.client.auth.getClaims.mockResolvedValue({ data: { claims: { sub: ME } }, error: null } as never);
+  });
+
+  it("removes the old private file when the photo is replaced", async () => {
+    await expect(saveMyRecipe({}, form(PRIVATE_NEW))).rejects.toBeInstanceOf(RedirectSignal);
+    expect(fake.calls.find((c) => c.table === "storage:user-photos")?.payload).toEqual([PRIVATE_OLD]);
+  });
+
+  it("removes the private file when the recipe is deleted", async () => {
+    await expect(deleteMyRecipe("recipe-1")).rejects.toMatchObject({ url: "/library" });
+    expect(fake.calls.find((c) => c.table === "storage:user-photos")?.payload).toEqual([PRIVATE_OLD]);
   });
 });

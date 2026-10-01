@@ -74,6 +74,7 @@ npm run test:watch   # re-run on save
 ## Security
 
 - Row-level security on every table: users only see their own library, private recipes and grocery lists.
-- Only admins can publish posts or upload photos; users cannot change their own role.
+- Only admins can publish posts or upload blog photos; users cannot change their own role.
+- Photos on private library recipes live in a private bucket: each user can only upload, view (via short-lived signed links) and delete files in their own folder.
 - Comments are length-limited in the database and rendered as plain text.
 - Reviews are limited to one per user per recipe, with a rate limit on new accounts.

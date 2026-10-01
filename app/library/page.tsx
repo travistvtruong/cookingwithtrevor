@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { RecipeCard } from "@/components/recipe-card";
 import { requireUser } from "@/lib/auth";
+import { displayPhotoUrls } from "@/lib/photos";
 import { getLibrary } from "@/lib/recipes";
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
 
   const { supabase, userId } = await requireUser();
   const library = await getLibrary(supabase, userId);
+  const photoUrls = await displayPhotoUrls(supabase, library.map(({ recipe }) => recipe.photo_url));
 
   // A personal library is small, so filter here rather than in SQL.
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -123,7 +125,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
               {results.map(({ recipe }) => (
                 <li key={recipe.id}>
                   <RecipeCard
-                    recipe={recipe}
+                    recipe={{ ...recipe, photo_url: (recipe.photo_url && photoUrls.get(recipe.photo_url)) || null }}
                     href={`/library/${recipe.id}`}
                     badge={recipe.is_public ? undefined : "Private"}
                   />

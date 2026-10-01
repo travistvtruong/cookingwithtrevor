@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { removePhoto } from "@/lib/photos";
 import { readRecipeForm, validateRecipe, type RecipeFormState } from "@/lib/recipe-form";
 import { slugify } from "@/lib/slugify";
 
@@ -14,12 +15,12 @@ export async function saveMyRecipe(
   _prev: RecipeFormState,
   formData: FormData,
 ): Promise<RecipeFormState> {
-  const { supabase } = await requireUser();
+  const { supabase, userId } = await requireUser();
   const id = String(formData.get("id") ?? "") || null;
-  // Private recipes have no photo (uploads are admin-only); ignore any sent.
-  const values = { ...readRecipeForm(formData), photo_url: "" };
+  const values = readRecipeForm(formData);
 
-  const result = validateRecipe(values);
+  // Photos must be in this user's own folder of the private bucket.
+  const result = validateRecipe(values, { kind: "private", userId });
   if ("state" in result) return result.state;
 
   const { ingredients, steps, ...recipe } = result.data;
@@ -29,10 +30,16 @@ export async function saveMyRecipe(
     String(formData.get("previous_slug") ?? "") ||
     `${slugify(recipe.title).slice(0, 80) || "recipe"}-${randomBytes(3).toString("hex")}`;
 
+  // Remember the current photo so a replaced or removed one can be cleaned up.
+  const previousPhoto = id
+    ? (await supabase.from("recipes").select("photo_url").eq("id", id).maybeSingle<{ photo_url: string | null }>())
+        .data?.photo_url ?? null
+    : null;
+
   const { data, error } = await supabase
     .rpc("save_recipe", {
       p_id: id,
-      p_recipe: { ...recipe, slug, photo_url: null, is_public: false },
+      p_recipe: { ...recipe, slug, is_public: false },
       p_ingredients: ingredients,
       p_steps: steps,
       p_add_to_library: !id,
@@ -40,6 +47,8 @@ export async function saveMyRecipe(
     .single<{ id: string; slug: string }>();
 
   if (error) return { error: `Could not save: ${error.message}`, values };
+
+  if (previousPhoto && previousPhoto !== recipe.photo_url) await removePhoto(supabase, previousPhoto);
 
   revalidatePath("/library");
   redirect(`/library/${data.id}`);
@@ -53,9 +62,12 @@ export async function deleteMyRecipe(id: string): Promise<{ error?: string }> {
     .eq("id", id)
     .eq("author_id", userId)
     .eq("is_public", false)
-    .select("id");
+    .select("id, photo_url");
   if (error) return { error: `Could not delete the recipe: ${error.message}` };
-  if (!data.length) return { error: "Could not delete the recipe: it wasn't found or you don't own it." };
+  const deleted = data as { id: string; photo_url: string | null }[];
+  if (!deleted.length) return { error: "Could not delete the recipe: it wasn't found or you don't own it." };
+
+  await removePhoto(supabase, deleted[0].photo_url);
 
   revalidatePath("/library");
   redirect("/library");

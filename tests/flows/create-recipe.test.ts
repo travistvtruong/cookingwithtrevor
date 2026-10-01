@@ -124,19 +124,47 @@ describe("create a blog post (admin dashboard)", () => {
 });
 
 describe("add a private recipe (library)", () => {
-  it("forces it private with no photo, gives it a unique URL and adds it to the library", async () => {
-    await expect(
-      saveMyRecipe({}, form({ ...VALID, intent: "publish", photo_url: "x" })),
-    ).rejects.toMatchObject({ url: "/library/recipe-1" });
+  it("forces it private, gives it a unique URL and adds it to the library", async () => {
+    await expect(saveMyRecipe({}, form({ ...VALID, intent: "publish" }))).rejects.toMatchObject({
+      url: "/library/recipe-1",
+    });
 
     const payload = rpcCall()?.payload as {
-      p_recipe: { slug: string; is_public: boolean; photo_url: null };
+      p_recipe: { slug: string; is_public: boolean; photo_url: string | null };
       p_add_to_library: boolean;
     };
     expect(payload.p_recipe.is_public).toBe(false); // can't publish from the library
     expect(payload.p_recipe.photo_url).toBeNull();
     expect(payload.p_recipe.slug).toMatch(/^mango-cheesecake-[0-9a-f]{6}$/);
     expect(payload.p_add_to_library).toBe(true);
+  });
+
+  describe("photos on private recipes", () => {
+    const ME = "11111111-1111-4111-8111-111111111111";
+    const SOMEONE_ELSE = "22222222-2222-4222-8222-222222222222";
+    const FILE = "33333333-3333-4333-8333-333333333333.jpg";
+
+    beforeEach(() => {
+      fake.client.auth.getClaims.mockResolvedValue({ data: { claims: { sub: ME } }, error: null } as never);
+    });
+
+    it("saves a photo stored in the user's own private folder", async () => {
+      await expect(saveMyRecipe({}, form({ ...VALID, photo_url: `${ME}/${FILE}` }))).rejects.toBeInstanceOf(
+        RedirectSignal,
+      );
+      expect((rpcCall()?.payload as { p_recipe: { photo_url: string } }).p_recipe.photo_url).toBe(`${ME}/${FILE}`);
+    });
+
+    it.each([
+      ["someone else's folder", `${SOMEONE_ELSE}/${FILE}`],
+      ["the public blog bucket", "https://test-project.supabase.co/storage/v1/object/public/recipe-photos/x.jpg"],
+      ["an outside URL", "https://evil.example/x.jpg"],
+      ["a path escape", `${ME}/../${FILE}`],
+    ])("rejects a photo from %s", async (_label, photo) => {
+      const result = await saveMyRecipe({}, form({ ...VALID, photo_url: photo }));
+      expect(result.fieldErrors?.photo_url).toMatch(/Upload the photo/);
+      expect(rpcCall()).toBeUndefined();
+    });
   });
 
   it("keeps the existing URL and doesn't re-add to the library on edit", async () => {

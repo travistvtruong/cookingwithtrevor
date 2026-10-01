@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { RecipeForm } from "@/components/recipe-form";
 import { requireUser } from "@/lib/auth";
 import { toFormValues } from "@/lib/recipe-form";
+import { displayPhotoUrls } from "@/lib/photos";
 import { getOwnRecipe } from "@/lib/recipes";
 import { deleteMyRecipe, saveMyRecipe } from "../../actions";
 
@@ -14,6 +15,9 @@ export default async function EditLibraryRecipePage({ params }: PageProps<"/libr
   const recipe = await getOwnRecipe(supabase, id, userId);
   // Blog posts are edited in the dashboard, not here.
   if (!recipe || recipe.is_public) notFound();
+  const photoPreview = recipe.photo_url
+    ? (await displayPhotoUrls(supabase, [recipe.photo_url])).get(recipe.photo_url)
+    : undefined;
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
@@ -25,6 +29,7 @@ export default async function EditLibraryRecipePage({ params }: PageProps<"/libr
         id={recipe.id}
         savedSlug={recipe.slug}
         initial={toFormValues(recipe)}
+        photoPreview={photoPreview}
       />
     </main>
   );

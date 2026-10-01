@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteButton } from "@/components/delete-button";
 import { RecipeDetails } from "@/components/recipe-details";
 import { requireUser } from "@/lib/auth";
 import type { Ingredient } from "@/lib/ingredients";
+import { displayPhotoUrls, isSignedPhotoUrl } from "@/lib/photos";
 import { deleteMyRecipe, removeFromLibrary } from "../actions";
 import { NotesForm } from "./notes-form";
 
@@ -17,6 +19,7 @@ type SavedRecipe = {
     title: string;
     slug: string;
     intro: string;
+    photo_url: string | null;
     prep_min: number | null;
     cook_min: number | null;
     servings: number | null;
@@ -37,7 +40,7 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
     .select(
       `notes,
        recipe:recipes (
-         id, title, slug, intro, prep_min, cook_min, servings, tags, is_public, author_id,
+         id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, is_public, author_id,
          ingredients (position, quantity, unit, name),
          steps (position, text)
        )`,
@@ -51,6 +54,9 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
   recipe.ingredients.sort((a, b) => a.position - b.position);
   recipe.steps.sort((a, b) => a.position - b.position);
   const isOwnPrivate = recipe.author_id === userId && !recipe.is_public;
+  const photo = recipe.photo_url
+    ? (await displayPhotoUrls(supabase, [recipe.photo_url])).get(recipe.photo_url)
+    : undefined;
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
@@ -81,6 +87,21 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
         </Link>
         {recipe.tags.length > 0 && <span className="text-stone-600">{recipe.tags.join(" · ")}</span>}
       </div>
+
+      {photo && (
+        <div className="relative mt-4 aspect-[3/2] overflow-hidden rounded-lg bg-stone-100">
+          <Image
+            src={photo}
+            alt={recipe.title}
+            fill
+            preload
+            // Private photos use signed URLs and skip the shared image optimizer.
+            unoptimized={isSignedPhotoUrl(photo)}
+            sizes="(min-width: 768px) 736px, calc(100vw - 32px)"
+            className="object-cover"
+          />
+        </div>
+      )}
 
       {recipe.intro && (
         <div className="mt-4 space-y-3 leading-relaxed text-stone-700">
