@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { BlogGrid } from "@/components/blog-grid";
 import { PostGrid } from "@/components/post-grid";
 import { RecipeCard } from "@/components/recipe-card";
+import { getPublishedBlogPosts } from "@/lib/blog";
 import { getPublishedRecipes, type RecipeSummary } from "@/lib/recipes";
 
 // Rebuilt on demand when a post is saved on this server; the 60s refresh also
@@ -10,10 +12,11 @@ export const revalidate = 60;
 const LATEST = 3;
 
 export default async function Home() {
-  const [[featured], recipes, reviews] = await Promise.all([
+  const [[featured], recipes, reviews, blogPosts] = await Promise.all([
     getPublishedRecipes({ limit: 1 }),
     getPublishedRecipes({ kind: "recipe", limit: LATEST + 1 }),
     getPublishedRecipes({ kind: "review", limit: LATEST + 1 }),
+    getPublishedBlogPosts({ limit: LATEST }),
   ]);
   // Don't repeat the featured post right below it, unless it's the section's only post.
   const without = (posts: RecipeSummary[]) => {
@@ -58,23 +61,22 @@ export default async function Home() {
         </div>
       </section>
 
-      <Section title="Latest recipes" href="/recipes" posts={without(recipes)} empty="Recipes are on the way." />
-      <Section title="Latest reviews" href="/reviews" posts={without(reviews)} empty="Reviews are on the way." />
+      <Section title="Latest recipes" href="/recipes">
+        <PostGrid posts={without(recipes)} empty="Recipes are on the way." />
+      </Section>
+      <Section title="Latest reviews" href="/reviews">
+        <PostGrid posts={without(reviews)} empty="Reviews are on the way." />
+      </Section>
+      {blogPosts.length > 0 && (
+        <Section title="From the blog" href="/blog">
+          <BlogGrid posts={blogPosts} empty="" />
+        </Section>
+      )}
     </main>
   );
 }
 
-function Section({
-  title,
-  href,
-  posts,
-  empty,
-}: {
-  title: string;
-  href: string;
-  posts: RecipeSummary[];
-  empty: string;
-}) {
+function Section({ title, href, children }: { title: string; href: string; children: React.ReactNode }) {
   return (
     <section className="mt-14" aria-labelledby={`${href.slice(1)}-heading`}>
       <div className="mb-6 flex items-end justify-between gap-4">
@@ -85,7 +87,7 @@ function Section({
           See all →
         </Link>
       </div>
-      <PostGrid posts={posts} empty={empty} />
+      {children}
     </section>
   );
 }

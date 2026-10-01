@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     default: "cookingwithtrevor",
     template: "%s · cookingwithtrevor",
   },
-  description: "Recipes and food reviews.",
+  description: "Recipes, food reviews and stories from the kitchen.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -62,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <nav aria-label="Footer" className="flex gap-6 text-sm">
               <Link href="/recipes" className="hover:text-white">Recipes</Link>
               <Link href="/reviews" className="hover:text-white">Reviews</Link>
+              <Link href="/blog" className="hover:text-white">Blog</Link>
             </nav>
             <p className="text-sm">© {new Date().getFullYear()} cookingwithtrevor</p>
           </div>

@@ -9,6 +9,7 @@ type Item = { href: string; label: string };
 const SECTIONS: Item[] = [
   { href: "/recipes", label: "Recipes" },
   { href: "/reviews", label: "Reviews" },
+  { href: "/blog", label: "Blog" },
 ];
 
 // The row under the logo: the blog's sections, then (when signed in) your own
