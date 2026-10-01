@@ -48,4 +48,14 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
 - Tests: 9 new collections flow tests. 131 total.
 - ⚠️ Not checked in a browser (needs a signed-in user): please try it on your phone.
 
-**Next:** R21 admin 2FA.
+
+### ✅ 4. Admin 2FA (R21)
+- `requireAdmin` now requires the session to have passed 2FA (JWT `aal2`); otherwise admins go to `/mfa`. Non-admins still get a 404.
+- `/mfa`: first time, shows a QR code + text key to add to an authenticator app, then a 6-digit code; after that, just the code. Clears half-finished enrollments.
+- Migration `20261005000000_admin_mfa.sql`: `is_admin()` requires `aal2`, so the database enforces 2FA for every admin rule.
+- Tests: 5 new (aal2 passes, aal1 redirects with `next`, admin actions blocked too, non-admins still 404, signed out 404). 136 total.
+- ⚠️ **Deploy order matters:** as soon as this code is live, the dashboard needs 2FA (the app check doesn't wait for the migration). Turn on TOTP MFA in Supabase **before** deploying, then enroll at `/mfa`.
+- ⚠️ Not tested in a real browser (needs your admin login + MFA enabled).
+- Lost your phone? Delete the factor in Supabase > Authentication > Users > your user.
+
+**Next:** R22 audit log.

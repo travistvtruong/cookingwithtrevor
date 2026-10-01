@@ -65,7 +65,8 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
     },
     rpc: (name: string, args: unknown) => builder({ rpc: name, op: "rpc", payload: args, filters: [] }),
     auth: {
-      getClaims: vi.fn(async () => ({ data: { claims: { sub: "user-1" } }, error: null })),
+      // aal2: the session has passed two-factor auth (required for admin actions).
+      getClaims: vi.fn(async () => ({ data: { claims: { sub: "user-1", aal: "aal2" } }, error: null })),
       signUp: vi.fn(async () => ({ data: { session: null, user: { id: "user-1" } }, error: null })),
       signInWithPassword: vi.fn(async () => ({ data: {}, error: null })),
       signOut: vi.fn(async () => ({ error: null })),
