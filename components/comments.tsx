@@ -20,6 +20,9 @@ type Props = {
 // who is viewing is worked out in the browser so the page can stay cached.
 export function Reviews({ recipeId, path, reviews, rating }: Props) {
   const [viewer, setViewer] = useState<Viewer>(undefined);
+  // The viewer's own comment, loaded directly so they also see it while it's
+  // held for moderation (the cached page only lists approved comments).
+  const [own, setOwn] = useState<(Comment & { status?: string }) | null>(null);
   const [deleteState, setDeleteState] = useState<ReviewState>({});
   const [deleting, startDelete] = useTransition();
 
@@ -29,12 +32,16 @@ export function Reviews({ recipeId, path, reviews, rating }: Props) {
       const { data } = await supabase.auth.getSession();
       const userId = data.session?.user.id ?? null;
       if (!userId) return setViewer({ userId: null, isAdmin: false });
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", userId).single();
+      const [{ data: profile }, { data: ownRow }] = await Promise.all([
+        supabase.from("profiles").select("role").eq("id", userId).single(),
+        supabase.from("ratings_comments").select("*").eq("recipe_id", recipeId).eq("user_id", userId).maybeSingle(),
+      ]);
+      if (ownRow) setOwn({ ...ownRow, author: "You" });
       setViewer({ userId, isAdmin: profile?.role === "admin" });
     })();
-  }, []);
+  }, [recipeId]);
 
-  const mine = viewer?.userId ? reviews.find((r) => r.user_id === viewer.userId) : undefined;
+  const mine = own ?? (viewer?.userId ? reviews.find((r) => r.user_id === viewer.userId) : undefined);
 
   function handleDelete(id: string, isOwn: boolean) {
     const question = isOwn ? "Delete your review?" : "Delete this review? This can't be undone.";
@@ -57,6 +64,16 @@ export function Reviews({ recipeId, path, reviews, rating }: Props) {
       )}
 
       <div className="mt-6">
+        {own?.status === "pending" && (
+          <p className="mb-3 rounded-lg bg-brand-tint px-4 py-3 text-sm text-brand-dark">
+            Your comment is waiting for approval. Only you can see it until then.
+          </p>
+        )}
+        {own?.status === "rejected" && (
+          <p className="mb-3 rounded-lg bg-stone-100 px-4 py-3 text-sm text-stone-700">
+            A moderator removed your comment, so it isn&apos;t shown to others.
+          </p>
+        )}
         {viewer === undefined ? null : viewer.userId ? (
           <ReviewForm
             recipeId={recipeId}

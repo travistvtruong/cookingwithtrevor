@@ -67,4 +67,13 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
 - Tests: 9 new. 145 total.
 - Gap: app-side logging can be skipped by someone calling the API directly as admin (with 2FA). Triggers on `recipes` would close it, but the overnight rules forbid changing that table.
 
-**Next:** R23 moderation queue.
+
+### ✅ 6. Moderation queue (R23)
+- Migration `20261007000000_moderation.sql`: `ratings_comments.status` (approved/pending/rejected; existing rows approved). A DB trigger holds comments with links, bare domains, email addresses or spam words as **pending**, and re-checks edits. Users can't write `status`. RLS: readers see approved only; authors see their own; the admin sees all. Ratings average counts approved only. `moderate_comment()` approves/rejects and writes the audit log in one transaction.
+- `/admin/moderation`: pending comments, oldest first, with Approve/Reject; "Moderation" link in the dashboard nav.
+- Commenters see "Thanks! Your comment will appear once it's been approved"; on the post they see their own pending comment with a note.
+- Works before the migration (no status = approved).
+- Tests: 11 new (flagged comment → pending, no status sent, clean → posted, edit re-check, rejected message, pre-migration, approve/reject, bad decision, deleted comment, admin + 2FA). 156 total.
+- The SQL flag rules themselves aren't unit-tested (no test database). Try posting a comment with a link after running the migration.
+
+**Next:** R24 README security section.

@@ -5,7 +5,8 @@ import { z } from "zod";
 import { logAdminAction } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
 
-export type ReviewState = { error?: string; message?: string };
+// pending: saved, but held for moderation (the database flags links and spam words).
+export type ReviewState = { error?: string; message?: string; pending?: boolean };
 
 // Refresh the cached post page. `path` comes from the browser, so only
 // well-formed post paths are accepted.
@@ -38,27 +39,39 @@ export async function saveReview(
   const { stars, comment } = parsed.data;
 
   // Update first so edits don't count toward the new-review rate limit.
+  // select() returns the saved row, including the status the database chose
+  // (selecting "*" keeps this working before the moderation migration runs).
   const { data: updated, error: updateError } = await supabase
     .from("ratings_comments")
     .update({ stars, comment })
     .eq("recipe_id", recipeId)
     .eq("user_id", userId)
-    .select("id");
+    .select();
   if (updateError) return { error: "Could not save your review. Please try again." };
 
-  if (!updated.length) {
-    const { error } = await supabase
+  let saved = ((updated ?? []) as { status?: string }[])[0];
+  if (!saved) {
+    // No status sent: the database decides (and users can't write that column).
+    const { data: inserted, error } = await supabase
       .from("ratings_comments")
-      .insert({ recipe_id: recipeId, user_id: userId, stars, comment });
+      .insert({ recipe_id: recipeId, user_id: userId, stars, comment })
+      .select();
     if (error) {
       // Raised by the rate-limit trigger in the database.
       if (error.code === "P0001") return { error: error.message };
       return { error: "Could not save your review. Please try again." };
     }
+    saved = ((inserted ?? []) as { status?: string }[])[0];
   }
 
   revalidatePost(path);
-  return { message: updated.length ? "Review updated." : "Thanks for your review!" };
+  if (saved?.status === "pending") {
+    return { pending: true, message: "Thanks! Your comment will appear once it's been approved." };
+  }
+  if (saved?.status === "rejected") {
+    return { error: "This comment was removed by a moderator, so it isn't shown." };
+  }
+  return { message: updated?.length ? "Review updated." : "Thanks for your review!" };
 }
 
 // Users can delete their own review; the admin can delete any (enforced by RLS).
