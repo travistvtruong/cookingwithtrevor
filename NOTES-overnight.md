@@ -76,4 +76,9 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
 - Tests: 11 new (flagged comment → pending, no status sent, clean → posted, edit re-check, rejected message, pre-migration, approve/reject, bad decision, deleted comment, admin + 2FA). 156 total.
 - The SQL flag rules themselves aren't unit-tested (no test database). Try posting a comment with a link after running the migration.
 
-**Next:** R24 README security section.
+
+### ✅ 7. README security section (R24)
+- New **Security** section: accounts + admin (allow-list + 2FA + DB enforcement), a table of who can read/write what, comments/spam/moderation, the append-only audit log, uploads, platform, and known gaps. Feature list, setup steps (enable MFA first) and project structure updated.
+- Added baseline **security headers** in `next.config.ts` (checked locally). Full CSP deferred (see DECISIONS).
+
+**Next:** R8/R13 check across all pages.
