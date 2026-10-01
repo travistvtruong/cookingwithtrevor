@@ -1,6 +1,46 @@
 # Overnight notes: 2026-09-30 → 10-01
 
-Branch: `overnight/2026-09-30` (not pushed). Previous night's notes are in git history (`git show 505779b:NOTES-overnight.md`).
+Branch: `overnight/2026-09-30`, **10 commits** on top of `main` @ `a563b59`. **Not pushed, not deployed, no migrations run, no production data touched.** Previous night's notes: `git show 505779b:NOTES-overnight.md`.
+
+## Summary
+
+### Finished
+All five tasks. Each is committed separately with passing tests and a passing build.
+1. **Blog posts (R14-R17):** `/blog`, `/blog/<slug>`, dashboard create/edit/delete, nav, home section, sitemap. R18 skipped as asked.
+2. **Search (R19):** `/search` across recipes (including ingredients), reviews and blog posts; search icon in the header.
+3. **Collections (R20):** group library recipes into named collections; filter the library by collection.
+4. **Admin 2FA (R21):** TOTP via `/mfa`, enforced in the app *and* the database (`is_admin()` requires `aal2`).
+5. **Audit log (R22):** append-only in the database; `/admin/audit`.
+6. **Moderation queue (R23):** comments with links/spam held as pending by a database trigger; `/admin/moderation`.
+7. **README security section (R24),** plus baseline security headers.
+8. **Mobile/speed check (R8/R13):** every public page passes at 320px; tap targets enlarged; card image sizes fixed; Lighthouse 94-96 locally (re-check live).
+9. **Flow tests** for blog publishing, search, collections and a flagged comment, plus many more. **168 tests** (was 102).
+10. **Multiple photos per post:** up to 12 captioned photos per recipe/review/blog post.
+
+### Half done
+- Nothing is mid-way. **Not checked in a real browser:** anything behind sign-in (collections UI, dashboard blog/gallery forms, `/mfa`, moderation and audit pages). Tests cover their server logic; please click through them.
+
+### Stuck / judgment calls
+- **The PRD sections in the instructions don't exist** (see the next section). I inferred R14-R24 from your task list. Please check that my reading matches what you meant, especially R14-R17 (blog) and R20 (collections).
+- **No test database:** the SQL (RLS, triggers, the moderation regex, search) is reviewed by hand but never executed. A typo would surface when you run a migration; Supabase's SQL Editor shows the exact line.
+- **Audit gap:** recipe/review actions are logged by the app, not a database trigger, because the rules forbid changing the `recipes` table. Blog and moderation are logged by the database.
+- **No comments on blog posts:** `ratings_comments` can only point at recipes, and the only allowed change to it was the status column.
+- **Full Content-Security-Policy** deferred (risky to ship untested).
+
+### What you need to do in the morning
+1. **Turn on MFA in Supabase:** Authentication → Multi-Factor → enable **TOTP**. Do this **before** deploying: as soon as the new code is live, the dashboard requires 2FA.
+2. **Run the new migrations in order** in the Supabase SQL Editor (each depends on the ones before it):
+   1. `20261002000000_blog_posts.sql`
+   2. `20261003000000_search.sql`
+   3. `20261004000000_collections.sql`
+   4. `20261005000000_admin_mfa.sql`
+   5. `20261006000000_audit_log.sql`
+   6. `20261007000000_moderation.sql`
+   7. `20261008000000_post_photos.sql`
+3. **Review and merge the branch:** `git log main..overnight/2026-09-30`, then merge and push (that deploys).
+4. **Enroll your admin account in 2FA:** sign in on the live site → Dashboard → `/mfa` shows a QR code → scan it with an authenticator app (Google Authenticator, 1Password, Authy…) → enter the 6-digit code. Lost the phone later? Delete the factor in Supabase → Authentication → Users.
+5. **Smoke test:** write a blog post with a few gallery photos, search for an ingredient, make a collection, post a comment containing a link (it should be held) and approve it in Moderation, then check the Audit log.
+6. Re-run Lighthouse on the live site (I can do it once deployed).
 
 ## ⚠️ Read first: the PRD sections didn't exist
 

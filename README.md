@@ -32,6 +32,7 @@ Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trad
 - A dashboard to write, edit, publish and unpublish recipes, reviews and blog posts, without touching code
 - **Two-factor authentication** for the admin, a **moderation queue** for held comments, and an **append-only audit log**
 - **Phone photo uploads:** take a photo in the form; it's resized on the device and its GPS/EXIF data is stripped before upload
+- **Photo galleries:** up to 12 extra captioned photos per post, shown in a grid
 - Delete any comment directly on the post
 
 <p>
@@ -47,7 +48,7 @@ Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trad
 | Database, auth, storage | **Supabase**: Postgres with row-level security, email/password auth, Storage |
 | Styling | **Tailwind CSS 4**, theme tokens, Montserrat + Geist via `next/font` |
 | Validation | **zod** |
-| Testing | **Vitest** (156 tests) |
+| Testing | **Vitest** (168 tests) |
 | Hosting | **Vercel** (auto-deploys from `main`) |
 | Email | Supabase Auth over Gmail SMTP |
 
@@ -75,9 +76,9 @@ Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trad
 
 **Accessibility:** WCAG AA colour contrast (checked for every colour pair), a skip link, labelled form fields and landmarks, keyboard-operable star pickers and checklists, and layouts tested down to 320px wide.
 
-**Tests:** `npm test` runs 156 Vitest tests:
+**Tests:** `npm test` runs 168 Vitest tests:
 - **Unit tests:** ingredient parsing and formatting, grocery merge rules, slugs, the open-redirect guard on login, site-URL handling.
-- **Flow tests:** the real Server Actions for sign-up, creating recipes, reviews and blog posts, search, collections, private photos, grocery lists, ratings/comments, moderation, the audit log, admin 2FA and photo cleanup, run against a recording fake Supabase client so they never touch a real database.
+- **Flow tests:** the real Server Actions for sign-up, creating recipes, reviews and blog posts, search, collections, private photos, photo galleries, grocery lists, ratings/comments, moderation, the audit log, admin 2FA and photo cleanup, run against a recording fake Supabase client so they never touch a real database.
 
 Database rules (RLS, triggers) aren't covered by automated tests yet; that needs a separate test Supabase project.
 
