@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Reviews as Comments } from "@/components/comments";
+import { PhotoGallery } from "@/components/photo-gallery";
 import { RecipeDetails } from "@/components/recipe-details";
 import { SaveButton } from "@/components/save-button";
 import { Stars } from "@/components/stars";
@@ -93,11 +94,16 @@ export function PostView({ post }: { post: Recipe }) {
           </div>
         )}
 
+        {/* Reviews: photos right after the write-up. Recipes: after the recipe card. */}
+        {isReview && <PhotoGallery photos={post.photos} title={post.title} />}
+
         {!isReview && (
           <div className="mt-10">
             <RecipeDetails {...post} anchorId="recipe" />
           </div>
         )}
+
+        {!isReview && <PhotoGallery photos={post.photos} title={post.title} />}
 
         <Comments recipeId={post.id} path={path} reviews={post.reviews} rating={post.rating} />
       </article>
@@ -127,7 +133,8 @@ function jsonLd(post: Recipe) {
   const aggregateRating = post.rating
     ? { "@type": "AggregateRating", ratingValue: post.rating.average, ratingCount: post.rating.count }
     : undefined;
-  const image = post.photo_url ? [post.photo_url] : undefined;
+  const allPhotos = [post.photo_url, ...post.photos.map((p) => p.url)].filter(Boolean);
+  const image = allPhotos.length ? allPhotos : undefined;
 
   let data: Record<string, unknown>;
   if (post.kind === "review") {

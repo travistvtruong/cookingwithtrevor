@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { GalleryPhoto } from "@/lib/gallery";
+import { getPostPhotos } from "@/lib/post-photos";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Ingredient } from "@/lib/ingredients";
 import type { EditableRecipe, PostKind } from "@/lib/recipe-form";
@@ -39,6 +41,7 @@ export type Recipe = RecipeSummary & {
   steps: { position: number; text: string }[];
   rating: { average: number; count: number } | null;
   reviews: Comment[];
+  photos: GalleryPhoto[];
 };
 
 // Newest reviews shown on a post; the average and count cover all of them.
@@ -87,7 +90,7 @@ export const getPublishedRecipe = cache(async (slug: string, kind: PostKind): Pr
   if (error) throw error;
   if (!data) return null;
 
-  const [{ data: rating }, { data: reviews, error: reviewsError }] = await Promise.all([
+  const [{ data: rating }, { data: reviews, error: reviewsError }, photos] = await Promise.all([
     supabase.from("recipe_ratings").select("average, count").eq("recipe_id", data.id).maybeSingle(),
     supabase
       .from("ratings_comments")
@@ -95,12 +98,14 @@ export const getPublishedRecipe = cache(async (slug: string, kind: PostKind): Pr
       .eq("recipe_id", data.id)
       .order("created_at", { ascending: false })
       .limit(REVIEWS_SHOWN),
+    getPostPhotos(supabase, { recipeId: data.id }),
   ]);
   if (reviewsError) throw reviewsError;
 
   return {
     ...data,
     rating: rating ?? null,
+    photos,
     reviews: (reviews ?? []).map(({ profiles, ...r }) => ({
       ...r,
       author: (profiles as unknown as { name: string } | null)?.name || "A reader",

@@ -97,4 +97,16 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
   The home page's first run scored 89 because the local image resizer was cold (3 s for the first photo); Vercel caches resized images. **Re-run Lighthouse on the live site after deploying** to confirm.
 - Side discovery: the new `X-Frame-Options: DENY` header blocks framing even from the same site (my first audit script used iframes), which confirms it works.
 
-**Next:** item 5, multiple photos per post (the four requested flow tests are already done: blog publish, search, collections, flagged comment).
+
+### ✅ 9. Requested flow tests (task 4)
+Written alongside each feature: publishing a blog post (`tests/flows/blog-post.test.ts`), search results (`search.test.ts`), adding to a collection (`collections.test.ts`), a flagged comment landing in pending (`moderation.test.ts`).
+
+### ✅ 10. Multiple photos per post (task 5)
+- Migration `20261008000000_post_photos.sql`: `post_photos` (recipe/review **or** blog post parent, caption, position, up to 12), RLS (visible with the post; admin writes), `set_post_photos()` replaces a gallery in one transaction and returns removed files.
+- Dashboard: **More photos** section in the recipe/review and blog forms: pick several at once (or take photos on a phone), resized on the device, captions, ↑/↓ reorder, remove. Save is disabled while uploading.
+- Public pages: a **Photos** grid (2 columns on phones, 3 on desktop) after the review write-up / after the recipe card / at the end of a blog post; each opens full size; captions shown; gallery photos added to the JSON-LD images.
+- Files removed from a gallery or belonging to a deleted post are deleted from storage (never the main photo).
+- Before the migration: posts still load and save; adding extra photos explains the migration is needed.
+- Library (private) recipes keep a single photo.
+- Tests: 12 new. 168 total.
+- ⚠️ Not tried in a browser (dashboard needs your admin login + 2FA).

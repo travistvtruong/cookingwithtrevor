@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { RecipeForm } from "@/components/recipe-form";
 import { requireAdmin } from "@/lib/auth";
 import { toFormValues } from "@/lib/recipe-form";
+import { getPostPhotos } from "@/lib/post-photos";
 import { getOwnRecipe, postPath } from "@/lib/recipes";
 import { deleteRecipe, saveRecipe } from "../../actions";
 
@@ -11,6 +12,7 @@ export default async function EditRecipePage({ params }: PageProps<"/admin/[id]/
   const { supabase, userId } = await requireAdmin();
   const recipe = await getOwnRecipe(supabase, id, userId);
   if (!recipe) notFound();
+  const gallery = await getPostPhotos(supabase, { recipeId: recipe.id });
 
   return (
     <main className="max-w-2xl">
@@ -40,6 +42,7 @@ export default async function EditRecipePage({ params }: PageProps<"/admin/[id]/
         id={recipe.id}
         savedSlug={recipe.slug}
         initial={toFormValues(recipe)}
+        gallery={gallery}
       />
     </main>
   );

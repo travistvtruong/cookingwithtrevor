@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BlogForm } from "@/components/blog-form";
 import { requireAdmin } from "@/lib/auth";
 import { blogPath, getBlogPostForEdit } from "@/lib/blog";
+import { getPostPhotos } from "@/lib/post-photos";
 import { deleteBlogPost, saveBlogPost } from "../../actions";
 
 export default async function EditBlogPostPage({ params }: PageProps<"/admin/blog/[id]/edit">) {
@@ -10,6 +11,7 @@ export default async function EditBlogPostPage({ params }: PageProps<"/admin/blo
   const { supabase } = await requireAdmin();
   const post = await getBlogPostForEdit(supabase, id);
   if (!post) notFound();
+  const gallery = await getPostPhotos(supabase, { blogPostId: post.id });
 
   return (
     <main className="max-w-2xl">
@@ -37,6 +39,7 @@ export default async function EditBlogPostPage({ params }: PageProps<"/admin/blo
         deleteAction={deleteBlogPost.bind(null, post.id, post.slug)}
         id={post.id}
         savedSlug={post.slug}
+        gallery={gallery}
         initial={{
           title: post.title,
           slug: post.slug,

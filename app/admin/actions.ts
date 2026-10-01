@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { logAdminAction } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth";
+import { readGallery } from "@/lib/gallery";
 import { removePhoto } from "@/lib/photos";
+import { galleryUrls, savePostPhotos } from "@/lib/post-photos";
 import { readRecipeForm, validateRecipe, type RecipeFormState } from "@/lib/recipe-form";
 import { slugify } from "@/lib/slugify";
 
@@ -31,6 +33,8 @@ export async function saveRecipe(
 
   const result = validateRecipe(values);
   if ("state" in result) return result.state;
+  const gallery = readGallery(formData);
+  if ("error" in gallery) return { error: gallery.error, values };
 
   const { ingredients, steps, ...recipe } = result.data;
   recipe.slug ||= slugify(recipe.title);
@@ -69,6 +73,12 @@ export async function saveRecipe(
 
   if (previousPhoto && previousPhoto !== recipe.photo_url) await removePhoto(supabase, previousPhoto);
 
+  const photos = await savePostPhotos(supabase, { recipeId: data.id }, gallery.photos, recipe.photo_url);
+  if (photos.error) {
+    revalidatePosts(data.slug, previousSlug);
+    return { error: photos.error, values };
+  }
+
   const wasPublic = previous?.is_public ?? false;
   await logAdminAction(supabase, {
     action: `${recipe.kind}.${
@@ -92,6 +102,7 @@ export async function saveRecipe(
 
 export async function deleteRecipe(id: string, slug: string): Promise<{ error?: string }> {
   const { supabase } = await requireAdmin();
+  const extraPhotos = await galleryUrls(supabase, { recipeId: id }); // rows go with the post; files don't
   // RLS blocks silently (0 rows, no error), so check that a row was actually deleted.
   const { data, error } = await supabase.from("recipes").delete().eq("id", id).select("id, kind, title, photo_url");
   if (error) return { error: `Could not delete the post: ${error.message}` };
@@ -99,6 +110,7 @@ export async function deleteRecipe(id: string, slug: string): Promise<{ error?: 
   if (!deleted.length) return { error: "Could not delete the post: it wasn't found or you don't own it." };
 
   await removePhoto(supabase, deleted[0].photo_url);
+  for (const url of extraPhotos) await removePhoto(supabase, url);
   await logAdminAction(supabase, {
     action: `${deleted[0].kind}.deleted`,
     entityType: deleted[0].kind,

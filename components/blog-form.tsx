@@ -3,7 +3,9 @@
 import { useActionState, useState } from "react";
 import type { BlogFormState, BlogFormValues } from "@/lib/blog-form";
 import { slugify } from "@/lib/slugify";
+import type { GalleryPhoto } from "@/lib/gallery";
 import { DeleteButton } from "./delete-button";
+import { GalleryUpload } from "./gallery-upload";
 import { PhotoUpload } from "./photo-upload";
 
 const inputClass =
@@ -15,11 +17,13 @@ type Props = {
   id?: string;
   savedSlug?: string;
   initial: BlogFormValues;
+  gallery?: GalleryPhoto[];
 };
 
-export function BlogForm({ action, deleteAction, id, savedSlug, initial }: Props) {
+export function BlogForm({ action, deleteAction, id, savedSlug, initial, gallery = [] }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [galleryBusy, setGalleryBusy] = useState(false);
   const values = state.values ?? initial;
   const errors = state.fieldErrors ?? {};
   const isPublished = initial.is_public;
@@ -81,6 +85,8 @@ export function BlogForm({ action, deleteAction, id, savedSlug, initial }: Props
         onBusyChange={setPhotoBusy}
       />
 
+      <GalleryUpload defaultPhotos={gallery} onBusyChange={setGalleryBusy} />
+
       <div className="space-y-1">
         <label htmlFor="excerpt" className="text-sm font-medium text-stone-700">
           Summary <span className="font-normal text-stone-500">(optional)</span>
@@ -118,7 +124,7 @@ export function BlogForm({ action, deleteAction, id, savedSlug, initial }: Props
             type="submit"
             name="intent"
             value="publish"
-            disabled={pending || photoBusy}
+            disabled={pending || photoBusy || galleryBusy}
             className="rounded-full bg-brand px-5 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
           >
             {pending ? "Saving…" : isPublished ? "Update post" : "Publish"}
@@ -127,7 +133,7 @@ export function BlogForm({ action, deleteAction, id, savedSlug, initial }: Props
             type="submit"
             name="intent"
             value="draft"
-            disabled={pending || photoBusy}
+            disabled={pending || photoBusy || galleryBusy}
             className="rounded-full border border-stone-300 bg-white px-5 py-2.5 font-medium text-stone-800 hover:bg-stone-50 disabled:opacity-60"
           >
             {isPublished ? "Unpublish" : "Save draft"}

@@ -3,7 +3,9 @@
 import { useActionState, useState } from "react";
 import type { RecipeFormState, RecipeFormValues } from "@/lib/recipe-form";
 import { slugify } from "@/lib/slugify";
+import type { GalleryPhoto } from "@/lib/gallery";
 import { DeleteButton } from "./delete-button";
+import { GalleryUpload } from "./gallery-upload";
 import { PhotoUpload } from "./photo-upload";
 
 const inputClass =
@@ -18,12 +20,14 @@ type Props = {
   savedSlug?: string;
   initial: RecipeFormValues;
   photoPreview?: string; // signed URL for an existing private photo
+  gallery?: GalleryPhoto[]; // extra photos (posts only; library recipes have one photo)
 };
 
-export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial, photoPreview }: Props) {
+export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial, photoPreview, gallery = [] }: Props) {
   const isPost = variant === "post";
   const [state, formAction, pending] = useActionState(action, {});
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [galleryBusy, setGalleryBusy] = useState(false);
   const values = state.values ?? initial;
   const errors = state.fieldErrors ?? {};
   // Button labels follow the saved status, not an unsaved attempt.
@@ -179,6 +183,8 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
         onBusyChange={setPhotoBusy}
       />
 
+      {isPost && <GalleryUpload defaultPhotos={gallery} onBusyChange={setGalleryBusy} />}
+
       <div className="space-y-1">
         <label htmlFor="intro" className="text-sm font-medium text-stone-700">
           {isReview ? "Your review" : isPost ? "Intro" : "Description"}
@@ -263,7 +269,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
               type="submit"
               name="intent"
               value="publish"
-              disabled={pending || photoBusy}
+              disabled={pending || photoBusy || galleryBusy}
               className="rounded-full bg-brand px-5 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
             >
               {pending ? "Saving…" : isPublished ? "Update post" : "Publish"}
@@ -272,7 +278,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
               type="submit"
               name="intent"
               value="draft"
-              disabled={pending || photoBusy}
+              disabled={pending || photoBusy || galleryBusy}
               className="rounded-full border border-stone-300 bg-white px-5 py-2.5 font-medium text-stone-800 hover:bg-stone-50 disabled:opacity-60"
             >
               {isPublished ? "Unpublish" : "Save draft"}
@@ -281,7 +287,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
         ) : (
           <button
             type="submit"
-            disabled={pending || photoBusy}
+            disabled={pending || photoBusy || galleryBusy}
             className="rounded-full bg-brand px-5 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
           >
             {pending ? "Saving…" : "Save recipe"}

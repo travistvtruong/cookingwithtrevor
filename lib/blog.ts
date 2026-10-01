@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { GalleryPhoto } from "@/lib/gallery";
+import { getPostPhotos } from "@/lib/post-photos";
 import { createPublicClient } from "@/lib/supabase/public";
 
 export type BlogPostSummary = {
@@ -15,6 +17,7 @@ export type BlogPostSummary = {
 };
 
 export type BlogPost = BlogPostSummary & { body: string; is_public: boolean };
+export type PublishedBlogPost = BlogPost & { photos: GalleryPhoto[] };
 
 const SUMMARY_FIELDS = "id, title, slug, excerpt, cover_photo_url, tags, published_at, updated_at";
 
@@ -44,8 +47,9 @@ export async function getPublishedBlogPosts({ limit }: { limit?: number } = {}):
 }
 
 // Wrapped in React cache so generateMetadata and the page share one query.
-export const getPublishedBlogPost = cache(async (slug: string): Promise<BlogPost | null> => {
-  const { data, error } = await createPublicClient()
+export const getPublishedBlogPost = cache(async (slug: string): Promise<PublishedBlogPost | null> => {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
     .from("blog_posts")
     .select(`${SUMMARY_FIELDS}, body, is_public`)
     .eq("slug", slug)
@@ -53,7 +57,9 @@ export const getPublishedBlogPost = cache(async (slug: string): Promise<BlogPost
     .maybeSingle();
   if (missingTable(error)) return null;
   if (error) throw error;
-  return data as BlogPost | null;
+  if (!data) return null;
+  const post = data as BlogPost;
+  return { ...post, photos: await getPostPhotos(supabase, { blogPostId: post.id }) };
 });
 
 // Any blog post (draft or published) for the admin to edit. RLS: admin only.

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { readBlogForm, validateBlogPost, type BlogFormState } from "@/lib/blog-form";
+import { readGallery } from "@/lib/gallery";
 import { removePhoto } from "@/lib/photos";
+import { galleryUrls, savePostPhotos } from "@/lib/post-photos";
 
 // Refresh every cached page a blog post can appear on.
 function revalidateBlog(...slugs: string[]) {
@@ -22,6 +24,8 @@ export async function saveBlogPost(_prev: BlogFormState, formData: FormData): Pr
   const result = validateBlogPost(values);
   if ("state" in result) return result.state;
   const post = result.data;
+  const gallery = readGallery(formData);
+  if ("error" in gallery) return { error: gallery.error, values };
 
   // Remember the current cover so a replaced or removed one can be cleaned up.
   const previousCover = id
@@ -43,12 +47,19 @@ export async function saveBlogPost(_prev: BlogFormState, formData: FormData): Pr
 
   if (previousCover && previousCover !== post.cover_photo_url) await removePhoto(supabase, previousCover);
 
+  const photos = await savePostPhotos(supabase, { blogPostId: saved.id }, gallery.photos, post.cover_photo_url);
+  if (photos.error) {
+    revalidateBlog(saved.slug, previousSlug);
+    return { error: photos.error, values };
+  }
+
   revalidateBlog(saved.slug, previousSlug);
   redirect("/admin");
 }
 
 export async function deleteBlogPost(id: string, slug: string): Promise<{ error?: string }> {
   const { supabase } = await requireAdmin();
+  const extraPhotos = await galleryUrls(supabase, { blogPostId: id }); // rows go with the post; files don't
   // RLS blocks silently (0 rows, no error), so check that a row was actually deleted.
   const { data, error } = await supabase.from("blog_posts").delete().eq("id", id).select("id, cover_photo_url");
   if (error) return { error: `Could not delete the post: ${error.message}` };
@@ -56,6 +67,7 @@ export async function deleteBlogPost(id: string, slug: string): Promise<{ error?
   if (!deleted.length) return { error: "Could not delete the post: it wasn't found or you don't have access." };
 
   await removePhoto(supabase, deleted[0].cover_photo_url);
+  for (const url of extraPhotos) await removePhoto(supabase, url);
   revalidateBlog(slug);
   redirect("/admin");
 }

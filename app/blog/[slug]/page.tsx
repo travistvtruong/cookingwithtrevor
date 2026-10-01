@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { PhotoGallery } from "@/components/photo-gallery";
 import { bodyText, parseBody } from "@/lib/blog-body";
 import { blogPath, formatDate, getPublishedBlogPost, type BlogPost } from "@/lib/blog";
 
@@ -98,6 +99,8 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
             ),
           )}
         </div>
+
+        <PhotoGallery photos={post.photos} title={post.title} />
       </article>
     </main>
   );
