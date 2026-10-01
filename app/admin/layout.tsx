@@ -17,7 +17,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           Dashboard
         </Link>
         <Link href="/admin/new" className="font-medium text-brand hover:underline">
-          New post
+          New recipe
+        </Link>
+        <Link href="/admin/new?kind=review" className="font-medium text-brand hover:underline">
+          New review
         </Link>
       </nav>
       {children}

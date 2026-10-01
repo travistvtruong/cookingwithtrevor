@@ -1,31 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useViewer } from "./use-viewer";
 
-// Auth state is read in the browser so blog pages stay statically cacheable.
+// Top-right of the header: sign in / sign out. Navigation lives in SiteNav.
 export function UserMenu() {
-  const [email, setEmail] = useState<string | null | undefined>(undefined);
-  const pathname = usePathname();
+  const viewer = useViewer();
   const router = useRouter();
-
-  // Sign-in happens in a Server Function, which sets the auth cookie without
-  // firing a browser auth event, so re-read the session after each navigation.
-  useEffect(() => {
-    createClient()
-      .auth.getSession()
-      .then(({ data }) => setEmail(data.session?.user.email ?? null));
-  }, [pathname]);
-
-  // Catches changes made in the browser: sign-out, token refresh, other tabs.
-  useEffect(() => {
-    const { data } = createClient().auth.onAuthStateChange((_event, session) =>
-      setEmail(session?.user.email ?? null),
-    );
-    return () => data.subscription.unsubscribe();
-  }, []);
 
   async function handleSignOut() {
     await createClient().auth.signOut();
@@ -33,28 +16,22 @@ export function UserMenu() {
     router.refresh();
   }
 
-  if (email === undefined) return <span className="h-5 w-16" aria-hidden />;
+  if (viewer === undefined) return <span className="h-5 w-16" aria-hidden />;
 
-  if (!email) {
+  if (!viewer.userId) {
     return (
-      <Link href="/login" className="text-sm font-medium text-brand hover:underline">
+      <Link href="/login" className="text-sm font-semibold text-brand hover:underline">
         Sign in
       </Link>
     );
   }
 
   return (
-    <nav aria-label="Account" className="flex items-center gap-3 text-sm sm:gap-4">
-      <Link href="/library" className="font-medium text-stone-800 hover:text-brand">
-        Library
-      </Link>
-      <Link href="/grocery" className="font-medium text-stone-800 hover:text-brand">
-        Lists
-      </Link>
-      <span className="hidden max-w-40 truncate text-stone-600 md:inline">{email}</span>
-      <button type="button" onClick={handleSignOut} className="font-medium text-brand hover:underline">
+    <div className="flex items-center gap-4 text-sm">
+      <span className="hidden max-w-48 truncate text-stone-600 md:inline">{viewer.email}</span>
+      <button type="button" onClick={handleSignOut} className="font-semibold text-brand hover:underline">
         Sign out
       </button>
-    </nav>
+    </div>
   );
 }

@@ -13,14 +13,22 @@ export default async function AdminDashboard() {
 
   return (
     <main>
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold text-stone-900">Posts</h1>
-        <Link
-          href="/admin/new"
-          className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
-        >
-          New post
-        </Link>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-extrabold text-ink">Posts</h1>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/new"
+            className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+          >
+            New recipe
+          </Link>
+          <Link
+            href="/admin/new?kind=review"
+            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
+          >
+            New review
+          </Link>
+        </div>
       </div>
 
       {recipes.length === 0 ? (
