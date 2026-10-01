@@ -43,7 +43,7 @@ export function Checklist({ initialItems }: { initialItems: Item[] }) {
           type="checkbox"
           checked={item.checked}
           onChange={() => toggle(item.id)}
-          className="h-6 w-6 shrink-0 accent-orange-600"
+          className="h-6 w-6 shrink-0 accent-brand"
         />
         <span className={item.checked ? "text-stone-500 line-through" : "text-lg text-stone-900"}>
           {formatIngredient(item)}

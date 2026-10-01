@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { signIn, signUp, type AuthState } from "./actions";
 
 const inputClass =
-  "w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30";
+  "w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30";
 
 export function LoginForm({ next, initialState }: { next: string; initialState: AuthState }) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -47,7 +47,7 @@ export function LoginForm({ next, initialState }: { next: string; initialState: 
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-md bg-orange-700 px-4 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
+          className="w-full rounded-full bg-brand px-4 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
         >
           {pending ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
         </button>
@@ -58,7 +58,7 @@ export function LoginForm({ next, initialState }: { next: string; initialState: 
         <button
           type="button"
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="font-medium text-orange-700 underline"
+          className="font-medium text-brand underline"
         >
           {mode === "signin" ? "Create an account" : "Sign in"}
         </button>

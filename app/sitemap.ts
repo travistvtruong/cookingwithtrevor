@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
-import { getPublishedRecipes } from "@/lib/recipes";
+import { getPublishedRecipes, postPath } from "@/lib/recipes";
 import { siteUrl } from "@/lib/site-url";
 
-// Lists the home page and every published post so search engines find new posts.
+// Lists the home page, both sections and every published post (recipes and
+// reviews) so search engines find new posts.
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -11,8 +12,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: base, changeFrequency: "daily", priority: 1 },
+    { url: `${base}/recipes`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/reviews`, changeFrequency: "daily", priority: 0.9 },
     ...recipes.map((r) => ({
-      url: `${base}/recipes/${r.slug}`,
+      url: `${base}${postPath(r)}`,
       lastModified: r.updated_at,
       changeFrequency: "weekly" as const,
       priority: 0.8,

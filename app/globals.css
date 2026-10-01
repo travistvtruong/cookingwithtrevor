@@ -1,18 +1,35 @@
 @import "tailwindcss";
 
+/* Site palette: change these to re-colour the whole site.
+   Charcoal & tomato. Contrast checked against white/paper (WCAG AA). */
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
+  --background: #fafaf9; /* warm white */
+  --foreground: #1c1917; /* charcoal */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-paper: #fafaf9;
+  --color-ink: #1c1917;
+  --color-brand: #c2410c; /* tomato: buttons, links, colour blocks */
+  --color-brand-dark: #9a3412; /* hover / text on soft backgrounds */
+  --color-brand-soft: #fed7aa; /* peach: tags, selected states */
+  --color-brand-tint: #fff7ed; /* faint background wash */
+
   --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-montserrat); /* headings */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-montserrat), var(--font-sans), system-ui, sans-serif;
 }

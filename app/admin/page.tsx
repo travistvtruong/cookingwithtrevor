@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { postPath } from "@/lib/recipes";
 
 export default async function AdminDashboard() {
   const { supabase, userId } = await requireAdmin();
   const { data: recipes, error } = await supabase
     .from("recipes")
-    .select("id, title, slug, is_public, updated_at")
+    .select("id, kind, title, slug, is_public, updated_at")
     .eq("author_id", userId)
     .order("updated_at", { ascending: false });
   if (error) throw error;
@@ -16,7 +17,7 @@ export default async function AdminDashboard() {
         <h1 className="text-2xl font-semibold text-stone-900">Posts</h1>
         <Link
           href="/admin/new"
-          className="rounded-md bg-orange-700 px-4 py-2 text-sm font-medium text-white hover:bg-orange-800"
+          className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
         >
           New post
         </Link>
@@ -31,12 +32,12 @@ export default async function AdminDashboard() {
               <div className="min-w-0">
                 <Link
                   href={`/admin/${r.id}/edit`}
-                  className="block truncate font-medium text-stone-900 hover:text-orange-700"
+                  className="block truncate font-medium text-stone-900 hover:text-brand"
                 >
                   {r.title}
                 </Link>
                 <p className="text-xs text-stone-500">
-                  Updated {new Date(r.updated_at).toLocaleDateString("en-US", { dateStyle: "medium" })}
+                  {r.kind === "review" ? "Review" : "Recipe"} · Updated {new Date(r.updated_at).toLocaleDateString("en-US", { dateStyle: "medium" })}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3 text-sm">
@@ -50,7 +51,7 @@ export default async function AdminDashboard() {
                   {r.is_public ? "Published" : "Draft"}
                 </span>
                 {r.is_public && (
-                  <Link href={`/recipes/${r.slug}`} className="text-orange-700 hover:underline">
+                  <Link href={postPath(r)} className="text-brand hover:underline">
                     View
                   </Link>
                 )}

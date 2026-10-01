@@ -11,14 +11,14 @@ export async function generateStaticParams() {
   return [];
 }
 
-export async function generateMetadata({ params }: PageProps<"/recipes/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/reviews/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  return postMetadata(await getPublishedRecipe(slug, "recipe"));
+  return postMetadata(await getPublishedRecipe(slug, "review"));
 }
 
-export default async function Page({ params }: PageProps<"/recipes/[slug]">) {
+export default async function Page({ params }: PageProps<"/reviews/[slug]">) {
   const { slug } = await params;
-  const post = await getPublishedRecipe(slug, "recipe");
+  const post = await getPublishedRecipe(slug, "review");
   if (!post) notFound();
   return <PostView post={post} />;
 }

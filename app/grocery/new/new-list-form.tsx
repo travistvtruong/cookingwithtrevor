@@ -32,7 +32,7 @@ export function NewListForm({ recipes, preselected }: { recipes: Option[]; prese
                   value={r.id}
                   checked={selected.has(r.id)}
                   onChange={() => toggle(r.id)}
-                  className="h-5 w-5 accent-orange-600"
+                  className="h-5 w-5 accent-brand"
                 />
                 <span className="text-stone-900">{r.title}</span>
               </label>
@@ -48,7 +48,7 @@ export function NewListForm({ recipes, preselected }: { recipes: Option[]; prese
           name="name"
           maxLength={100}
           placeholder="Named after the recipes if left blank"
-          className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30"
+          className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
         />
       </div>
 
@@ -57,7 +57,7 @@ export function NewListForm({ recipes, preselected }: { recipes: Option[]; prese
       <button
         type="submit"
         disabled={pending || selected.size === 0}
-        className="w-full rounded-md bg-orange-700 px-5 py-3 font-medium text-white hover:bg-orange-800 disabled:opacity-60 sm:w-auto"
+        className="w-full rounded-full bg-brand px-5 py-3 font-medium text-white hover:bg-brand-dark disabled:opacity-60 sm:w-auto"
       >
         {pending
           ? "Making your list…"

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { RecipeForm } from "@/components/recipe-form";
 import { requireAdmin } from "@/lib/auth";
 import { toFormValues } from "@/lib/recipe-form";
-import { getOwnRecipe } from "@/lib/recipes";
+import { getOwnRecipe, postPath } from "@/lib/recipes";
 import { deleteRecipe, saveRecipe } from "../../actions";
 
 export default async function EditRecipePage({ params }: PageProps<"/admin/[id]/edit">) {
@@ -28,7 +28,7 @@ export default async function EditRecipePage({ params }: PageProps<"/admin/[id]/
           </span>
         </div>
         {recipe.is_public && (
-          <Link href={`/recipes/${recipe.slug}`} className="text-sm text-orange-700 hover:underline">
+          <Link href={postPath(recipe)} className="text-sm text-brand hover:underline">
             View post
           </Link>
         )}

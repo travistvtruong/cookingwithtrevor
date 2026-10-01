@@ -6,7 +6,7 @@ const revalidatePath = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => supabase.current }));
 vi.mock("next/cache", () => ({ revalidatePath }));
 
-import { deleteReview, saveReview } from "@/app/recipes/[slug]/actions";
+import { deleteReview, saveReview } from "@/app/comment-actions";
 
 function form(stars: string | null, comment = "") {
   const fd = new FormData();
@@ -35,7 +35,7 @@ beforeEach(() => {
   supabase.current = fake.client;
 });
 
-const save = (fd: FormData) => saveReview("recipe-1", "mango-cheesecake", {}, fd);
+const save = (fd: FormData) => saveReview("recipe-1", "/recipes/mango-cheesecake", {}, fd);
 const ops = () => fake.calls.map((c) => c.op);
 
 describe("rate and comment on a post", () => {
@@ -103,15 +103,27 @@ describe("rate and comment on a post", () => {
   });
 });
 
+describe("revalidation path from the browser", () => {
+  it("refreshes review posts too, and ignores anything that isn't a post path", async () => {
+    await saveReview("recipe-1", "/reviews/joes-tacos", {}, form("4"));
+    expect(revalidatePath).toHaveBeenCalledWith("/reviews/joes-tacos");
+
+    revalidatePath.mockClear();
+    await saveReview("recipe-1", "/admin", {}, form("4"));
+    await saveReview("recipe-1", "/recipes/../admin", {}, form("4"));
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
 describe("delete a review", () => {
   it("deletes and refreshes the post", async () => {
-    expect(await deleteReview("review-1", "mango-cheesecake")).toEqual({ message: "Review deleted." });
+    expect(await deleteReview("review-1", "/recipes/mango-cheesecake")).toEqual({ message: "Review deleted." });
     expect(revalidatePath).toHaveBeenCalledWith("/recipes/mango-cheesecake");
   });
 
   it("reports when nothing was deleted (not yours, and not admin, so RLS refused)", async () => {
     deleteResult = { data: [] };
-    expect(await deleteReview("someone-elses", "mango-cheesecake")).toEqual({
+    expect(await deleteReview("someone-elses", "/recipes/mango-cheesecake")).toEqual({
       error: "Could not delete that review.",
     });
     expect(revalidatePath).not.toHaveBeenCalled();

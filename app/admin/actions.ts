@@ -7,6 +7,18 @@ import { removePhoto } from "@/lib/photos";
 import { readRecipeForm, validateRecipe, type RecipeFormState } from "@/lib/recipe-form";
 import { slugify } from "@/lib/slugify";
 
+// Refresh every cached page a post can appear on: home, both index pages and
+// the post itself (under either kind, since a post's kind can change).
+function revalidatePosts(...slugs: string[]) {
+  revalidatePath("/");
+  revalidatePath("/recipes");
+  revalidatePath("/reviews");
+  for (const slug of new Set(slugs.filter(Boolean))) {
+    revalidatePath(`/recipes/${slug}`);
+    revalidatePath(`/reviews/${slug}`);
+  }
+}
+
 export async function saveRecipe(
   _prev: RecipeFormState,
   formData: FormData,
@@ -49,10 +61,7 @@ export async function saveRecipe(
 
   if (previousPhoto && previousPhoto !== recipe.photo_url) await removePhoto(supabase, previousPhoto);
 
-  revalidatePath("/");
-  revalidatePath(`/recipes/${data.slug}`);
-  if (previousSlug && previousSlug !== data.slug) revalidatePath(`/recipes/${previousSlug}`);
-
+  revalidatePosts(data.slug, previousSlug);
   redirect("/admin");
 }
 
@@ -66,7 +75,6 @@ export async function deleteRecipe(id: string, slug: string): Promise<{ error?: 
 
   await removePhoto(supabase, deleted[0].photo_url);
 
-  revalidatePath("/");
-  revalidatePath(`/recipes/${slug}`);
+  revalidatePosts(slug);
   redirect("/admin");
 }

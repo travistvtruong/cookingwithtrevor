@@ -54,7 +54,7 @@ export function RecipeDetails({
       <ul className="mt-3 space-y-2">
         {ingredients.map((ing) => (
           <li key={ing.position} className="flex gap-3 text-stone-800">
-            <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-700" />
+            <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
             {formatIngredient(ing)}
           </li>
         ))}
@@ -64,7 +64,7 @@ export function RecipeDetails({
       <ol className="mt-3 space-y-4">
         {steps.map((step, i) => (
           <li key={step.position} className="flex gap-4 text-stone-800">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-800">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand-dark">
               {i + 1}
             </span>
             <p className="pt-0.5 leading-relaxed">{step.text}</p>

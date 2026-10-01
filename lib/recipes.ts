@@ -3,10 +3,12 @@ import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Ingredient } from "@/lib/ingredients";
-import type { EditableRecipe } from "@/lib/recipe-form";
+import type { EditableRecipe, PostKind } from "@/lib/recipe-form";
 
+// A published post: a recipe or a food review (kind).
 export type RecipeSummary = {
   id: string;
+  kind: PostKind;
   title: string;
   slug: string;
   intro: string;
@@ -15,11 +17,15 @@ export type RecipeSummary = {
   cook_min: number | null;
   servings: number | null;
   tags: string[];
+  place_name: string | null;
+  place_location: string | null;
+  my_rating: number | null;
   published_at: string | null;
   updated_at: string;
 };
 
-export type Review = {
+// A reader's star rating and comment on a post.
+export type Comment = {
   id: string;
   user_id: string;
   stars: number;
@@ -32,27 +38,38 @@ export type Recipe = RecipeSummary & {
   ingredients: (Ingredient & { position: number })[];
   steps: { position: number; text: string }[];
   rating: { average: number; count: number } | null;
-  reviews: Review[];
+  reviews: Comment[];
 };
 
 // Newest reviews shown on a post; the average and count cover all of them.
 const REVIEWS_SHOWN = 50;
 
 const SUMMARY_FIELDS =
-  "id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, published_at, updated_at";
+  "id, kind, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, place_name, place_location, my_rating, published_at, updated_at";
 
-export async function getPublishedRecipes(): Promise<RecipeSummary[]> {
-  const { data, error } = await createPublicClient()
+// Published posts, newest first; optionally only one kind and/or the latest few.
+export async function getPublishedRecipes(
+  { kind, limit }: { kind?: PostKind; limit?: number } = {},
+): Promise<RecipeSummary[]> {
+  let query = createPublicClient()
     .from("recipes")
     .select(SUMMARY_FIELDS)
     .eq("is_public", true)
     .order("published_at", { ascending: false });
+  if (kind) query = query.eq("kind", kind);
+  if (limit) query = query.limit(limit);
+  const { data, error } = await query;
   if (error) throw error;
-  return data;
+  return data as RecipeSummary[];
+}
+
+// Where a post lives: /recipes/<slug> or /reviews/<slug>.
+export function postPath(post: { kind: PostKind; slug: string }) {
+  return `/${post.kind === "review" ? "reviews" : "recipes"}/${post.slug}`;
 }
 
 // Wrapped in React cache so generateMetadata and the page share one query.
-export const getPublishedRecipe = cache(async (slug: string): Promise<Recipe | null> => {
+export const getPublishedRecipe = cache(async (slug: string, kind: PostKind): Promise<Recipe | null> => {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("recipes")
@@ -62,6 +79,7 @@ export const getPublishedRecipe = cache(async (slug: string): Promise<Recipe | n
        steps (position, text)`,
     )
     .eq("slug", slug)
+    .eq("kind", kind)
     .eq("is_public", true)
     .order("position", { referencedTable: "ingredients" })
     .order("position", { referencedTable: "steps" })
@@ -99,7 +117,8 @@ export async function getOwnRecipe(
   const { data } = await supabase
     .from("recipes")
     .select(
-      `id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, is_public,
+      `id, kind, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, is_public,
+       place_name, place_location, my_rating,
        ingredients (position, quantity, unit, name),
        steps (position, text)`,
     )

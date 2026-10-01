@@ -3,22 +3,22 @@
 import Link from "next/link";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { Stars } from "@/components/stars";
-import type { Review } from "@/lib/recipes";
+import type { Comment } from "@/lib/recipes";
 import { createClient } from "@/lib/supabase/client";
-import { deleteReview, saveReview, type ReviewState } from "./actions";
+import { deleteReview, saveReview, type ReviewState } from "@/app/comment-actions";
 
 type Viewer = { userId: string | null; isAdmin: boolean } | undefined;
 
 type Props = {
   recipeId: string;
-  slug: string;
-  reviews: Review[];
+  path: string; // the post's URL path, e.g. /recipes/mango
+  reviews: Comment[];
   rating: { average: number; count: number } | null;
 };
 
 // Review text is rendered server-side into the static page (good for SEO);
 // who is viewing is worked out in the browser so the page can stay cached.
-export function Reviews({ recipeId, slug, reviews, rating }: Props) {
+export function Reviews({ recipeId, path, reviews, rating }: Props) {
   const [viewer, setViewer] = useState<Viewer>(undefined);
   const [deleteState, setDeleteState] = useState<ReviewState>({});
   const [deleting, startDelete] = useTransition();
@@ -39,7 +39,7 @@ export function Reviews({ recipeId, slug, reviews, rating }: Props) {
   function handleDelete(id: string, isOwn: boolean) {
     const question = isOwn ? "Delete your review?" : "Delete this review? This can't be undone.";
     if (!confirm(question)) return;
-    startDelete(async () => setDeleteState(await deleteReview(id, slug)));
+    startDelete(async () => setDeleteState(await deleteReview(id, path)));
   }
 
   return (
@@ -60,12 +60,12 @@ export function Reviews({ recipeId, slug, reviews, rating }: Props) {
         {viewer === undefined ? null : viewer.userId ? (
           <ReviewForm
             recipeId={recipeId}
-            slug={slug}
+            path={path}
             existing={mine}
           />
         ) : (
           <p className="rounded-lg border border-stone-200 bg-white p-4 text-stone-700">
-            <Link href={`/login?next=/recipes/${slug}`} className="font-medium text-orange-700 underline">
+            <Link href={`/login?next=${encodeURIComponent(path)}`} className="font-medium text-brand underline">
               Sign in
             </Link>{" "}
             to rate this recipe and leave a comment.
@@ -112,8 +112,8 @@ export function Reviews({ recipeId, slug, reviews, rating }: Props) {
   );
 }
 
-function ReviewForm({ recipeId, slug, existing }: { recipeId: string; slug: string; existing?: Review }) {
-  const [state, formAction, pending] = useActionState(saveReview.bind(null, recipeId, slug), {});
+function ReviewForm({ recipeId, path, existing }: { recipeId: string; path: string; existing?: Comment }) {
+  const [state, formAction, pending] = useActionState(saveReview.bind(null, recipeId, path), {});
   // Controlled fields so React's post-submit form reset doesn't clear what was just saved.
   const [stars, setStars] = useState(existing?.stars ?? 0);
   const [comment, setComment] = useState(existing?.comment ?? "");
@@ -131,7 +131,7 @@ function ReviewForm({ recipeId, slug, existing }: { recipeId: string; slug: stri
             <label
               key={n}
               onMouseEnter={() => setHover(n)}
-              className="cursor-pointer p-1 text-3xl leading-none has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-orange-600"
+              className="cursor-pointer p-1 text-3xl leading-none has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brand"
             >
               <input
                 type="radio"
@@ -141,7 +141,7 @@ function ReviewForm({ recipeId, slug, existing }: { recipeId: string; slug: stri
                 onChange={() => setStars(n)}
                 className="sr-only"
               />
-              <span aria-hidden className={n <= shown ? "text-orange-600" : "text-stone-500"}>{n <= shown ? "★" : "☆"}</span>
+              <span aria-hidden className={n <= shown ? "text-brand" : "text-stone-500"}>{n <= shown ? "★" : "☆"}</span>
               <span className="sr-only">{n} {n === 1 ? "star" : "stars"}</span>
             </label>
           ))}
@@ -160,7 +160,7 @@ function ReviewForm({ recipeId, slug, existing }: { recipeId: string; slug: stri
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="How did it turn out? Any changes you made?"
-          className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30"
+          className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
         />
       </div>
 
@@ -168,7 +168,7 @@ function ReviewForm({ recipeId, slug, existing }: { recipeId: string; slug: stri
         <button
           type="submit"
           disabled={pending || stars === 0}
-          className="rounded-md bg-orange-700 px-5 py-2.5 font-medium text-white hover:bg-orange-800 disabled:opacity-60"
+          className="rounded-full bg-brand px-5 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
         >
           {pending ? "Saving…" : existing ? "Update review" : "Post review"}
         </button>

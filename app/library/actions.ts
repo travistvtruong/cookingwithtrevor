@@ -17,7 +17,8 @@ export async function saveMyRecipe(
 ): Promise<RecipeFormState> {
   const { supabase, userId } = await requireUser();
   const id = String(formData.get("id") ?? "") || null;
-  const values = readRecipeForm(formData);
+  // The library only holds recipes; reviews are blog posts made in the dashboard.
+  const values = { ...readRecipeForm(formData), kind: "recipe" as const };
 
   // Photos must be in this user's own folder of the private bucket.
   const result = validateRecipe(values, { kind: "private", userId });

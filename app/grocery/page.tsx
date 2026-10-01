@@ -19,7 +19,7 @@ export default async function GroceryListsPage() {
         <h1 className="text-3xl font-semibold tracking-tight text-stone-900">Grocery lists</h1>
         <Link
           href="/grocery/new"
-          className="rounded-md bg-orange-700 px-4 py-2 text-sm font-medium text-white hover:bg-orange-800"
+          className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
         >
           New list
         </Link>

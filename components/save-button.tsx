@@ -49,7 +49,7 @@ export function SaveButton({ recipeId, slug }: { recipeId: string; slug: string 
     setStatus(status === "saved" ? "not-saved" : "saved");
   }
 
-  const base = "rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-60";
+  const base = "rounded-full border px-5 py-2.5 text-sm font-semibold disabled:opacity-60";
 
   if (status === "loading") {
     return <span className={`${base} invisible border-transparent`}>Save to library</span>;
@@ -75,14 +75,14 @@ export function SaveButton({ recipeId, slug }: { recipeId: string; slug: string 
         aria-pressed={status === "saved"}
         className={
           status === "saved"
-            ? `${base} border-orange-600 bg-orange-50 text-orange-800 hover:bg-orange-100`
+            ? `${base} border-brand bg-brand-tint text-brand-dark hover:bg-brand-soft`
             : `${base} border-stone-300 bg-white text-stone-800 hover:bg-stone-50`
         }
       >
         {status === "saved" ? "✓ Saved" : "Save to library"}
       </button>
       {status === "saved" && (
-        <Link href={`/library/${recipeId}`} className="text-sm text-orange-700 hover:underline">
+        <Link href={`/library/${recipeId}`} className="text-sm text-brand hover:underline">
           Add notes
         </Link>
       )}

@@ -44,14 +44,14 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
           {library.length > 0 && (
             <Link
               href="/grocery/new"
-              className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
+              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
             >
               Make a grocery list
             </Link>
           )}
           <Link
             href="/library/new"
-            className="rounded-md bg-orange-700 px-4 py-2 text-sm font-medium text-white hover:bg-orange-800"
+            className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
           >
             Add a recipe
           </Link>
@@ -63,11 +63,11 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
           <p>Your library is empty.</p>
           <p className="mt-2">
             Save recipes from the{" "}
-            <Link href="/" className="font-medium text-orange-700 underline">
+            <Link href="/" className="font-medium text-brand underline">
               blog
             </Link>{" "}
             or{" "}
-            <Link href="/library/new" className="font-medium text-orange-700 underline">
+            <Link href="/library/new" className="font-medium text-brand underline">
               add your own
             </Link>
             .
@@ -84,11 +84,11 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
               type="search"
               defaultValue={q}
               placeholder="Search by name"
-              className="w-full max-w-md rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30"
+              className="w-full max-w-md rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
             />
             <button
               type="submit"
-              className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
+              className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
             >
               Search
             </button>
@@ -103,7 +103,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
                   aria-current={t === tag ? "true" : undefined}
                   className={
                     t === tag
-                      ? "rounded-full bg-orange-700 px-3 py-1 text-sm text-white"
+                      ? "rounded-full bg-brand px-3 py-1 text-sm text-white"
                       : "rounded-full border border-stone-300 bg-white px-3 py-1 text-sm text-stone-700 hover:bg-stone-50"
                   }
                 >
@@ -116,7 +116,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
           {results.length === 0 ? (
             <p className="mt-8 text-stone-600">
               No recipes match.{" "}
-              <Link href="/library" className="font-medium text-orange-700 underline">
+              <Link href="/library" className="font-medium text-brand underline">
                 Clear filters
               </Link>
             </p>

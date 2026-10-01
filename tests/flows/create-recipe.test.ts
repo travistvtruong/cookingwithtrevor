@@ -61,6 +61,7 @@ describe("create a blog post (admin dashboard)", () => {
     expect(rpcCall()?.payload).toEqual({
       p_id: null,
       p_recipe: {
+        kind: "recipe",
         title: "Mango Cheesecake",
         slug: "mango-cheesecake", // generated from the title when left blank
         intro: "No-bake and bright.",
@@ -69,6 +70,9 @@ describe("create a blog post (admin dashboard)", () => {
         cook_min: null,
         servings: 8,
         tags: ["dessert", "no-bake"], // slugified and de-duplicated
+        place_name: null,
+        place_location: null,
+        my_rating: null,
         is_public: true,
       },
       p_ingredients: [
@@ -79,6 +83,7 @@ describe("create a blog post (admin dashboard)", () => {
       p_steps: ["Crush the crumbs.", "Chill overnight."],
     });
     expect(revalidatePath).toHaveBeenCalledWith("/");
+    expect(revalidatePath).toHaveBeenCalledWith("/recipes");
     expect(revalidatePath).toHaveBeenCalledWith("/recipes/mango-cheesecake");
   });
 
@@ -116,10 +121,69 @@ describe("create a blog post (admin dashboard)", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/recipes/old-url");
   });
 
+  it("revalidates the old URL too when a post's URL changes", async () => {
+    await expect(
+      saveRecipe({}, form({ ...VALID, id: "recipe-1", previous_slug: "older-url", intent: "publish" })),
+    ).rejects.toBeInstanceOf(RedirectSignal);
+    expect(revalidatePath).toHaveBeenCalledWith("/recipes/older-url");
+    expect(revalidatePath).toHaveBeenCalledWith("/reviews/older-url");
+  });
+
   it("is hidden (404) from signed-in users who aren't admin", async () => {
     role = "reader";
     await expect(saveRecipe({}, form(VALID))).rejects.toBeInstanceOf(NotFoundSignal);
     expect(rpcCall()).toBeUndefined();
+  });
+});
+
+describe("create a food review post (admin dashboard)", () => {
+  const REVIEW = {
+    ...VALID,
+    kind: "review",
+    title: "Best tacos in town",
+    place_name: " Joe's Tacos ",
+    place_location: "Austin, TX",
+    my_rating: "4",
+    intro: "Crispy, cheap and fast.",
+    ingredients: "",
+    steps: "",
+  };
+
+  it("saves the place and rating, with no ingredients, steps or times", async () => {
+    rpcResult = { data: { id: "review-1", slug: "best-tacos-in-town" } };
+    await expect(saveRecipe({}, form({ ...REVIEW, intent: "publish" }))).rejects.toMatchObject({ url: "/admin" });
+
+    const payload = rpcCall()?.payload as {
+      p_recipe: Record<string, unknown>;
+      p_ingredients: unknown[];
+      p_steps: unknown[];
+    };
+    expect(payload.p_recipe).toMatchObject({
+      kind: "review",
+      slug: "best-tacos-in-town",
+      place_name: "Joe's Tacos",
+      place_location: "Austin, TX",
+      my_rating: 4,
+      prep_min: null, // recipe-only fields are cleared even if the form sent them
+      servings: null,
+    });
+    expect(payload.p_ingredients).toEqual([]);
+    expect(payload.p_steps).toEqual([]);
+    expect(revalidatePath).toHaveBeenCalledWith("/reviews/best-tacos-in-town");
+    expect(revalidatePath).toHaveBeenCalledWith("/reviews");
+  });
+
+  it("requires a place and a 1-5 rating, but not ingredients or steps", async () => {
+    const result = await saveRecipe({}, form({ ...REVIEW, place_name: " ", my_rating: "" }));
+    expect(result.fieldErrors).toEqual({
+      place_name: "Add the place or dish you're reviewing.",
+      my_rating: "Pick your rating.",
+    });
+
+    for (const bad of ["0", "6", "2.5", "abc"]) {
+      const r = await saveRecipe({}, form({ ...REVIEW, my_rating: bad }));
+      expect(r.fieldErrors?.my_rating).toBe("Pick your rating.");
+    }
   });
 });
 
@@ -165,6 +229,11 @@ describe("add a private recipe (library)", () => {
       expect(result.fieldErrors?.photo_url).toMatch(/Upload the photo/);
       expect(rpcCall()).toBeUndefined();
     });
+  });
+
+  it("is always a recipe, even if the form claims to be a review", async () => {
+    await expect(saveMyRecipe({}, form({ ...VALID, kind: "review" }))).rejects.toBeInstanceOf(RedirectSignal);
+    expect((rpcCall()?.payload as { p_recipe: { kind: string } }).p_recipe.kind).toBe("recipe");
   });
 
   it("keeps the existing URL and doesn't re-add to the library on edit", async () => {

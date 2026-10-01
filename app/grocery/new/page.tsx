@@ -18,7 +18,7 @@ export default async function NewGroceryListPage({ searchParams }: PageProps<"/g
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:py-12">
-      <Link href="/grocery" className="text-sm text-orange-700 hover:underline">
+      <Link href="/grocery" className="text-sm text-brand hover:underline">
         ← Grocery lists
       </Link>
       <h1 className="mt-4 text-2xl font-semibold text-stone-900">New grocery list</h1>
@@ -29,7 +29,7 @@ export default async function NewGroceryListPage({ searchParams }: PageProps<"/g
       {recipes.length === 0 ? (
         <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-stone-600">
           Your library is empty.{" "}
-          <Link href="/" className="font-medium text-orange-700 underline">Save some recipes</Link> first.
+          <Link href="/" className="font-medium text-brand underline">Save some recipes</Link> first.
         </p>
       ) : (
         <NewListForm

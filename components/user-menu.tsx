@@ -37,7 +37,7 @@ export function UserMenu() {
 
   if (!email) {
     return (
-      <Link href="/login" className="text-sm font-medium text-orange-700 hover:underline">
+      <Link href="/login" className="text-sm font-medium text-brand hover:underline">
         Sign in
       </Link>
     );
@@ -45,14 +45,14 @@ export function UserMenu() {
 
   return (
     <nav aria-label="Account" className="flex items-center gap-3 text-sm sm:gap-4">
-      <Link href="/library" className="font-medium text-stone-800 hover:text-orange-700">
+      <Link href="/library" className="font-medium text-stone-800 hover:text-brand">
         Library
       </Link>
-      <Link href="/grocery" className="font-medium text-stone-800 hover:text-orange-700">
+      <Link href="/grocery" className="font-medium text-stone-800 hover:text-brand">
         Lists
       </Link>
       <span className="hidden max-w-40 truncate text-stone-600 md:inline">{email}</span>
-      <button type="button" onClick={handleSignOut} className="font-medium text-orange-700 hover:underline">
+      <button type="button" onClick={handleSignOut} className="font-medium text-brand hover:underline">
         Sign out
       </button>
     </nav>

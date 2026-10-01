@@ -26,13 +26,13 @@ export default function Error({
         <button
           type="button"
           onClick={() => retry()}
-          className="rounded-md bg-orange-700 px-5 py-2.5 font-medium text-white hover:bg-orange-800"
+          className="rounded-full bg-brand px-5 py-2.5 font-medium text-white hover:bg-brand-dark"
         >
           Try again
         </button>
         <Link
           href="/"
-          className="rounded-md border border-stone-300 bg-white px-5 py-2.5 font-medium text-stone-800 hover:bg-stone-50"
+          className="rounded-full border border-stone-300 bg-white px-5 py-2.5 font-medium text-stone-800 hover:bg-stone-50"
         >
           Go home
         </Link>

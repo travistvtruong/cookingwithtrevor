@@ -6,6 +6,12 @@ import { createClient } from "@/lib/supabase/server";
 
 export type ReviewState = { error?: string; message?: string };
 
+// Refresh the cached post page. `path` comes from the browser, so only
+// well-formed post paths are accepted.
+function revalidatePost(path: string) {
+  if (/^\/(recipes|reviews)\/[a-z0-9]+(-[a-z0-9]+)*$/.test(path)) revalidatePath(path);
+}
+
 const reviewSchema = z.object({
   stars: z.coerce.number().int().min(1, "Pick a star rating.").max(5),
   comment: z.string().trim().max(2000, "Keep comments under 2,000 characters."),
@@ -14,7 +20,7 @@ const reviewSchema = z.object({
 // One review per user per recipe: posting again updates it.
 export async function saveReview(
   recipeId: string,
-  slug: string,
+  path: string,
   _prev: ReviewState,
   formData: FormData,
 ): Promise<ReviewState> {
@@ -50,12 +56,12 @@ export async function saveReview(
     }
   }
 
-  revalidatePath(`/recipes/${slug}`);
+  revalidatePost(path);
   return { message: updated.length ? "Review updated." : "Thanks for your review!" };
 }
 
 // Users can delete their own review; the admin can delete any (enforced by RLS).
-export async function deleteReview(reviewId: string, slug: string): Promise<ReviewState> {
+export async function deleteReview(reviewId: string, path: string): Promise<ReviewState> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("ratings_comments")
@@ -64,6 +70,6 @@ export async function deleteReview(reviewId: string, slug: string): Promise<Revi
     .select("id");
   if (error || !data.length) return { error: "Could not delete that review." };
 
-  revalidatePath(`/recipes/${slug}`);
+  revalidatePost(path);
   return { message: "Review deleted." };
 }
