@@ -58,4 +58,13 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
 - ⚠️ Not tested in a real browser (needs your admin login + MFA enabled).
 - Lost your phone? Delete the factor in Supabase > Authentication > Users > your user.
 
-**Next:** R22 audit log.
+
+### ✅ 5. Audit log (R22)
+- Migration `20261006000000_audit_log.sql`: `audit_log` table, **append-only** (no write policies; a trigger rejects UPDATE/DELETE even for the owner; TRUNCATE revoked); readable by admins with 2FA only.
+- Logged: recipe/review created/published/updated/unpublished/deleted (app → `log_admin_action`), every blog post change (DB trigger on `blog_posts`), the admin deleting someone else's comment, and moderation decisions (next step, inside the DB function).
+- `/admin/audit` page (latest 200 entries); "Audit log" link in the dashboard nav.
+- Logging is best-effort: a failed write is logged as a server warning and never blocks the action. The tests caught a crash path here; it's fixed.
+- Tests: 9 new. 145 total.
+- Gap: app-side logging can be skipped by someone calling the API directly as admin (with 2FA). Triggers on `recipes` would close it, but the overnight rules forbid changing that table.
+
+**Next:** R23 moderation queue.

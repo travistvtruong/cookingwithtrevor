@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { logAdminAction } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
 
 export type ReviewState = { error?: string; message?: string };
@@ -63,12 +64,25 @@ export async function saveReview(
 // Users can delete their own review; the admin can delete any (enforced by RLS).
 export async function deleteReview(reviewId: string, path: string): Promise<ReviewState> {
   const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getClaims();
   const { data, error } = await supabase
     .from("ratings_comments")
     .delete()
     .eq("id", reviewId)
-    .select("id");
+    .select("id, user_id, stars, comment");
   if (error || !data.length) return { error: "Could not delete that review." };
+
+  // Deleting someone else's comment is moderation (only the admin can, per RLS): log it.
+  const deleted = data[0] as { user_id: string; stars: number; comment: string };
+  if (deleted.user_id !== auth?.claims.sub) {
+    await logAdminAction(supabase, {
+      action: "comment.deleted",
+      entityType: "comment",
+      entityId: reviewId,
+      summary: `${deleted.stars}★ ${deleted.comment}`.slice(0, 300),
+      details: { author_id: deleted.user_id, path },
+    });
+  }
 
   revalidatePost(path);
   return { message: "Review deleted." };
