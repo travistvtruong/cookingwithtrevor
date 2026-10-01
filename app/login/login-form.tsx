@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
+import { signIn, signUp, type AuthState } from "./actions";
 
 const inputClass =
   "w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30";
@@ -15,22 +15,6 @@ export function LoginForm({ next, initialState }: { next: string; initialState: 
 
   return (
     <div className="space-y-6">
-      <form action={signInWithGoogle}>
-        <input type="hidden" name="next" value={next} />
-        <button
-          type="submit"
-          className="w-full rounded-md border border-stone-300 bg-white px-4 py-2.5 font-medium text-stone-800 hover:bg-stone-50"
-        >
-          Continue with Google
-        </button>
-      </form>
-
-      <div className="flex items-center gap-3 text-sm text-stone-500">
-        <span className="h-px flex-1 bg-stone-200" />
-        or
-        <span className="h-px flex-1 bg-stone-200" />
-      </div>
-
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="next" value={next} />
         {mode === "signup" && (

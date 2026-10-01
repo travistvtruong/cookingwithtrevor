@@ -8,7 +8,6 @@ export const metadata: Metadata = {
 };
 
 const ERRORS: Record<string, string> = {
-  google: "Google sign-in could not start. Please try again.",
   callback: "Sign-in didn't complete. Please try again.",
   expired:
     "That link has expired or was already used. If you already confirmed your email, just sign in below.",

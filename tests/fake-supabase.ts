@@ -68,7 +68,6 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
       getClaims: vi.fn(async () => ({ data: { claims: { sub: "user-1" } }, error: null })),
       signUp: vi.fn(async () => ({ data: { session: null, user: { id: "user-1" } }, error: null })),
       signInWithPassword: vi.fn(async () => ({ data: {}, error: null })),
-      signInWithOAuth: vi.fn(async () => ({ data: { url: "https://accounts.google.com/o" }, error: null })),
       signOut: vi.fn(async () => ({ error: null })),
     },
   };

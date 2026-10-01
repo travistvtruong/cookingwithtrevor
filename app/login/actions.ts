@@ -46,16 +46,3 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (!data.session) return { message: "Check your email to confirm your account." };
   redirect(next);
 }
-
-export async function signInWithGoogle(formData: FormData) {
-  const next = safeNext(formData.get("next"));
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}` },
-  });
-  if (error || !data.url) redirect("/login?error=google");
-
-  redirect(data.url);
-}
