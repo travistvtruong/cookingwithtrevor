@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NewCollectionForm, RenameCollectionForm } from "@/components/collection-forms";
+import { DeleteButton } from "@/components/delete-button";
 import { RecipeCard } from "@/components/recipe-card";
 import { requireUser } from "@/lib/auth";
+import { getCollections } from "@/lib/collections";
 import { displayPhotoUrls } from "@/lib/photos";
 import { getLibrary } from "@/lib/recipes";
+import { deleteCollection } from "./collection-actions";
 
 export const metadata: Metadata = {
   title: "My library",
@@ -14,9 +18,14 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.trim() : "";
   const tag = typeof params.tag === "string" ? params.tag : "";
+  const collectionId = typeof params.collection === "string" ? params.collection : "";
 
   const { supabase, userId } = await requireUser();
-  const library = await getLibrary(supabase, userId);
+  const [library, collections] = await Promise.all([
+    getLibrary(supabase, userId),
+    getCollections(supabase, userId),
+  ]);
+  const active = collections.find((c) => c.id === collectionId);
   const photoUrls = await displayPhotoUrls(supabase, library.map(({ recipe }) => recipe.photo_url));
 
   // A personal library is small, so filter here rather than in SQL.
@@ -24,6 +33,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
   const results = library.filter(
     ({ recipe }) =>
       (!tag || recipe.tags.includes(tag)) &&
+      (!active || active.recipeIds.includes(recipe.id)) &&
       words.every((w) => recipe.title.toLowerCase().includes(w)),
   );
   const allTags = [...new Set(library.flatMap(({ recipe }) => recipe.tags))].sort();
@@ -31,6 +41,7 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
   const tagHref = (t: string) => {
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
+    if (active) sp.set("collection", active.id);
     if (t && t !== tag) sp.set("tag", t);
     const s = sp.toString();
     return s ? `/library?${s}` : "/library";
@@ -75,8 +86,48 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
         </div>
       ) : (
         <>
+          <section aria-labelledby="collections-heading" className="mt-6 space-y-3">
+            <h2 id="collections-heading" className="text-sm font-bold uppercase tracking-wider text-stone-600">
+              Collections
+            </h2>
+            {collections.length > 0 && (
+              <nav aria-label="Collections" className="flex flex-wrap gap-2">
+                {[{ id: "", name: "All recipes", count: library.length }, ...collections.map((c) => ({ ...c, count: c.recipeIds.length }))].map((c) => {
+                  const current = c.id === (active?.id ?? "");
+                  return (
+                    <Link
+                      key={c.id || "all"}
+                      href={c.id ? `/library?collection=${c.id}` : "/library"}
+                      aria-current={current ? "page" : undefined}
+                      className={
+                        current
+                          ? "rounded-full bg-ink px-3 py-1 text-sm font-semibold text-white"
+                          : "rounded-full border border-stone-300 bg-white px-3 py-1 text-sm text-stone-700 hover:bg-stone-50"
+                      }
+                    >
+                      {c.name} <span className={current ? "text-stone-300" : "text-stone-500"}>{c.count}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            )}
+            {active ? (
+              <div className="flex flex-wrap items-start gap-4 rounded-2xl border border-stone-200 bg-white p-4">
+                <RenameCollectionForm key={active.id} collectionId={active.id} name={active.name} />
+                <DeleteButton
+                  action={deleteCollection.bind(null, active.id)}
+                  label="Delete collection"
+                  confirmMessage={`Delete the collection "${active.name}"? Its recipes stay in your library.`}
+                />
+              </div>
+            ) : (
+              <NewCollectionForm />
+            )}
+          </section>
+
           <form action="/library" className="mt-6 flex gap-2">
             {tag && <input type="hidden" name="tag" value={tag} />}
+            {active && <input type="hidden" name="collection" value={active.id} />}
             <label htmlFor="q" className="sr-only">Search by name</label>
             <input
               id="q"
@@ -115,7 +166,9 @@ export default async function LibraryPage({ searchParams }: PageProps<"/library"
 
           {results.length === 0 ? (
             <p className="mt-8 text-stone-600">
-              No recipes match.{" "}
+              {active && active.recipeIds.length === 0
+                ? "This collection is empty. Open a recipe and tick the collection to add it. "
+                : "No recipes match. "}
               <Link href="/library" className="font-medium text-brand underline">
                 Clear filters
               </Link>

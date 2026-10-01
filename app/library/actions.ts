@@ -101,6 +101,10 @@ export async function removeFromLibrary(recipeId: string) {
     .eq("recipe_id", recipeId);
   if (error) throw error;
 
+  // Also take it out of the user's collections (RLS limits this to their own).
+  // Ignored if the collections migration hasn't run yet.
+  await supabase.from("collection_recipes").delete().eq("recipe_id", recipeId);
+
   revalidatePath("/library");
   redirect("/library");
 }

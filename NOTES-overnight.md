@@ -38,4 +38,14 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
 - Before the migration runs, searches return "nothing found" instead of erroring.
 - Tests: 7 new search flow tests (routing per type, short/empty/array queries skip the DB, length cap, SQL-looking input passed as a parameter, missing-function fallback, real errors surfaced). 122 total.
 
-**Next:** R20 collections.
+
+### ✅ 3. Collections (R20)
+- Migration `20261004000000_collections.sql`: `collections` + `collection_recipes`, RLS (own only; can only add recipes in your library), 50-per-user limit, name-only updates.
+- Library page: **Collections** chips (All recipes + each, with counts) filter the library; create, rename and delete (recipes stay in the library).
+- Recipe's library page: tick collections (instant, rolls back on failure) or create a new one and add in one step.
+- Removing a recipe from the library also removes it from your collections.
+- Before the migration runs: the library works, with no collections.
+- Tests: 9 new collections flow tests. 131 total.
+- ⚠️ Not checked in a browser (needs a signed-in user): please try it on your phone.
+
+**Next:** R21 admin 2FA.

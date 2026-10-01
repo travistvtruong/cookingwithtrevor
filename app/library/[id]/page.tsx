@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CollectionPicker } from "@/components/collection-picker";
 import { DeleteButton } from "@/components/delete-button";
 import { RecipeDetails } from "@/components/recipe-details";
 import { requireUser } from "@/lib/auth";
+import { getCollections } from "@/lib/collections";
 import type { Ingredient } from "@/lib/ingredients";
 import { displayPhotoUrls, isSignedPhotoUrl } from "@/lib/photos";
 import { deleteMyRecipe, removeFromLibrary } from "../actions";
@@ -54,6 +56,7 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
   recipe.ingredients.sort((a, b) => a.position - b.position);
   recipe.steps.sort((a, b) => a.position - b.position);
   const isOwnPrivate = recipe.author_id === userId && !recipe.is_public;
+  const collections = await getCollections(supabase, userId);
   const photo = recipe.photo_url
     ? (await displayPhotoUrls(supabase, [recipe.photo_url])).get(recipe.photo_url)
     : undefined;
@@ -117,6 +120,15 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
 
       <div className="mt-8">
         <NotesForm recipeId={recipe.id} notes={data.notes} />
+      </div>
+
+      <div className="mt-8">
+        <CollectionPicker
+          // Remount when collections change (e.g. one was just created) to pick up new props.
+          key={collections.map((c) => `${c.id}:${c.recipeIds.includes(recipe.id)}`).join()}
+          recipeId={recipe.id}
+          collections={collections.map((c) => ({ id: c.id, name: c.name, checked: c.recipeIds.includes(recipe.id) }))}
+        />
       </div>
 
       <div className="mt-10 border-t border-stone-200 pt-6">
