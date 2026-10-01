@@ -16,19 +16,19 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <Link href="/admin" className="font-semibold text-stone-900">
           Dashboard
         </Link>
-        <Link href="/admin/new" className="font-medium text-brand hover:underline">
+        <Link href="/admin/new" className="inline-block py-1.5 font-medium text-brand hover:underline">
           New recipe
         </Link>
-        <Link href="/admin/new?kind=review" className="font-medium text-brand hover:underline">
+        <Link href="/admin/new?kind=review" className="inline-block py-1.5 font-medium text-brand hover:underline">
           New review
         </Link>
-        <Link href="/admin/blog/new" className="font-medium text-brand hover:underline">
+        <Link href="/admin/blog/new" className="inline-block py-1.5 font-medium text-brand hover:underline">
           New blog post
         </Link>
-        <Link href="/admin/moderation" className="font-medium text-stone-700 hover:underline">
+        <Link href="/admin/moderation" className="inline-block py-1.5 font-medium text-stone-700 hover:underline">
           Moderation
         </Link>
-        <Link href="/admin/audit" className="font-medium text-stone-700 hover:underline">
+        <Link href="/admin/audit" className="inline-block py-1.5 font-medium text-stone-700 hover:underline">
           Audit log
         </Link>
       </nav>

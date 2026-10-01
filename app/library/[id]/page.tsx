@@ -63,7 +63,7 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
-      <Link href="/library" className="text-sm text-brand hover:underline">
+      <Link href="/library" className="inline-block py-1.5 text-sm text-brand hover:underline">
         ← My library
       </Link>
 
@@ -73,18 +73,18 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
             <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700">
               Private
             </span>
-            <Link href={`/library/${recipe.id}/edit`} className="font-medium text-brand hover:underline">
+            <Link href={`/library/${recipe.id}/edit`} className="inline-block py-1.5 font-medium text-brand hover:underline">
               Edit recipe
             </Link>
           </>
         ) : (
-          <Link href={`/recipes/${recipe.slug}`} className="font-medium text-brand hover:underline">
+          <Link href={`/recipes/${recipe.slug}`} className="inline-block py-1.5 font-medium text-brand hover:underline">
             View blog post
           </Link>
         )}
         <Link
           href={`/grocery/new?recipe=${recipe.id}`}
-          className="font-medium text-brand hover:underline"
+          className="inline-block py-1.5 font-medium text-brand hover:underline"
         >
           Make grocery list
         </Link>

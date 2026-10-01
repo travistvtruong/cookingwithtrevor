@@ -81,4 +81,20 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
 - New **Security** section: accounts + admin (allow-list + 2FA + DB enforcement), a table of who can read/write what, comments/spam/moderation, the append-only audit log, uploads, platform, and known gaps. Feature list, setup steps (enable MFA first) and project structure updated.
 - Added baseline **security headers** in `next.config.ts` (checked locally). Full CSP deferred (see DECISIONS).
 
-**Next:** R8/R13 check across all pages.
+
+### ✅ 8. Mobile layout (R8) and speed (R13) check
+- **Layout at 320px**, every public page (home, recipes, reviews, blog, search + results, login, recipe post, review post, 404): no sideways scroll, nothing off-screen, one h1 each, all images have alt text, all fields labelled. Signed-in pages added tonight were reviewed in code (I can't sign in).
+- **Fixed:** standalone text links (Sign in/out, See all, back links, View post, dashboard nav) were 20px tall, under the 24px WCAG 2.2 minimum; now 32px. Card images now request the right width on phones (saves 15-35 KB).
+- **Lighthouse on a local production build** (slower than Vercel; the review page scores 94 here vs 98 live):
+
+  | Page | Perf | A11y | Best | SEO | LCP |
+  | --- | --- | --- | --- | --- | --- |
+  | Home (warm cache) | 95 | 100 | 100 | 100 | 2.9 s |
+  | /blog | 96 | 100 | 100 | 100 | 2.7 s |
+  | /search?q=mango | 95 | 100 | 100 | 63 (noindex on purpose) | 3.0 s |
+  | Review post | 94 | 100 | 100 | 100 | 3.0 s |
+
+  The home page's first run scored 89 because the local image resizer was cold (3 s for the first photo); Vercel caches resized images. **Re-run Lighthouse on the live site after deploying** to confirm.
+- Side discovery: the new `X-Frame-Options: DENY` header blocks framing even from the same site (my first audit script used iframes), which confirms it works.
+
+**Next:** item 5, multiple photos per post (the four requested flow tests are already done: blog publish, search, collections, flagged comment).

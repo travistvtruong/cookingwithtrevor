@@ -83,7 +83,7 @@ function Section({ title, href, children }: { title: string; href: string; child
         <h2 id={`${href.slice(1)}-heading`} className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
           {title}
         </h2>
-        <Link href={href} className="shrink-0 text-sm font-bold text-brand hover:underline">
+        <Link href={href} className="inline-block py-1.5 shrink-0 text-sm font-bold text-brand hover:underline">
           See all →
         </Link>
       </div>

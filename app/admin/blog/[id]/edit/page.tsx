@@ -27,7 +27,7 @@ export default async function EditBlogPostPage({ params }: PageProps<"/admin/blo
           </span>
         </div>
         {post.is_public && (
-          <Link href={blogPath(post)} className="text-sm text-brand hover:underline">
+          <Link href={blogPath(post)} className="inline-block py-1.5 text-sm text-brand hover:underline">
             View post
           </Link>
         )}

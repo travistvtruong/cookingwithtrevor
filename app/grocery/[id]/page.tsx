@@ -23,7 +23,7 @@ export default async function GroceryListPage({ params }: PageProps<"/grocery/[i
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:py-10">
-      <Link href="/grocery" className="text-sm text-brand hover:underline">
+      <Link href="/grocery" className="inline-block py-1.5 text-sm text-brand hover:underline">
         ← Grocery lists
       </Link>
       <h1 className="mb-4 mt-3 text-2xl font-semibold text-stone-900">{list.name}</h1>

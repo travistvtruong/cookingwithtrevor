@@ -28,7 +28,7 @@ export default async function EditRecipePage({ params }: PageProps<"/admin/[id]/
           </span>
         </div>
         {recipe.is_public && (
-          <Link href={postPath(recipe)} className="text-sm text-brand hover:underline">
+          <Link href={postPath(recipe)} className="inline-block py-1.5 text-sm text-brand hover:underline">
             View post
           </Link>
         )}

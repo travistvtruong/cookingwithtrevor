@@ -48,8 +48,8 @@ export function RecipeCard({ recipe, href, badge, preload, size = "default" }: P
           unoptimized={isSignedPhotoUrl(recipe.photo_url)}
           sizes={
             size === "large"
-              ? "(min-width: 1024px) 680px, 100vw"
-              : "(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+              ? "(min-width: 1024px) 680px, calc(100vw - 32px)"
+              : "(min-width: 1024px) 360px, (min-width: 640px) 50vw, calc(100vw - 32px)"
           }
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />

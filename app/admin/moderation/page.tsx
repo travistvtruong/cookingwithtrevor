@@ -55,7 +55,7 @@ export default async function ModerationPage() {
                   {new Date(c.created_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
                 </time>
                 {c.recipes && (
-                  <Link href={postPath(c.recipes)} className="text-brand hover:underline">
+                  <Link href={postPath(c.recipes)} className="inline-block py-1.5 text-brand hover:underline">
                     on {c.recipes.title}
                   </Link>
                 )}

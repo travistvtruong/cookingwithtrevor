@@ -71,7 +71,7 @@ export default async function AdminDashboard() {
                   {r.is_public ? "Published" : "Draft"}
                 </span>
                 {r.is_public && (
-                  <Link href={postPath(r)} className="text-brand hover:underline">
+                  <Link href={postPath(r)} className="inline-block py-1.5 text-brand hover:underline">
                     View
                   </Link>
                 )}
@@ -110,7 +110,7 @@ export default async function AdminDashboard() {
                   {p.is_public ? "Published" : "Draft"}
                 </span>
                 {p.is_public && (
-                  <Link href={blogPath(p)} className="text-brand hover:underline">
+                  <Link href={blogPath(p)} className="inline-block py-1.5 text-brand hover:underline">
                     View
                   </Link>
                 )}

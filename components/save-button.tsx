@@ -82,7 +82,7 @@ export function SaveButton({ recipeId, slug }: { recipeId: string; slug: string 
         {status === "saved" ? "✓ Saved" : "Save to library"}
       </button>
       {status === "saved" && (
-        <Link href={`/library/${recipeId}`} className="text-sm text-brand hover:underline">
+        <Link href={`/library/${recipeId}`} className="inline-block py-1.5 text-sm text-brand hover:underline">
           Add notes
         </Link>
       )}
