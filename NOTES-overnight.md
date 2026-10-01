@@ -31,4 +31,11 @@ The instructions point to PRD sections (Update notes, Build status, "Patterns to
 - Tests: 13 new (body format + publish/draft/update/validation/duplicate/RLS/404/delete). 115 total.
 - No comments on blog posts (see DECISIONS).
 
-**Next:** R19 search.
+
+### ✅ 2. Search (R19)
+- Migration `20261003000000_search.sql`: `search_posts(query, limit)` SQL function (needs the blog migration first).
+- `/search?q=` page with result cards for all three post types; a search icon in the header; `/search` hidden from crawlers.
+- Before the migration runs, searches return "nothing found" instead of erroring.
+- Tests: 7 new search flow tests (routing per type, short/empty/array queries skip the DB, length cap, SQL-looking input passed as a parameter, missing-function fallback, real errors surfaced). 122 total.
+
+**Next:** R20 collections.

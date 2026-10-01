@@ -47,7 +47,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             >
               cookingwithtrevor
             </Link>
-            <UserMenu />
+            <div className="flex items-center gap-4">
+              <Link
+                href="/search"
+                aria-label="Search"
+                className="rounded-full p-1.5 text-ink hover:bg-stone-100 hover:text-brand"
+              >
+                <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+              </Link>
+              <UserMenu />
+            </div>
           </div>
           <SiteNav />
         </header>
