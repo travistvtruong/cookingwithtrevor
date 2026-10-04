@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signIn, signUp, type AuthState } from "./actions";
 
@@ -52,6 +53,14 @@ export function LoginForm({ next, initialState }: { next: string; initialState: 
           {pending ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
         </button>
       </form>
+
+      {mode === "signin" && (
+        <p className="text-center text-sm">
+          <Link href="/forgot-password" className="inline-block py-1.5 font-medium text-brand underline">
+            Forgot your password?
+          </Link>
+        </p>
+      )}
 
       <p className="text-center text-sm text-stone-600">
         {mode === "signin" ? "New here? " : "Already have an account? "}

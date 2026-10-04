@@ -91,6 +91,7 @@ Security is enforced in **Postgres**, not just the UI, so it holds even if someo
 - **Admin = allow-listed email + two-factor authentication.** Admin status comes from a private `admin_emails` table the API can't read, granted only to confirmed emails. Every admin power goes through `is_admin()`, which also requires the session to have passed TOTP 2FA (`aal2`). The dashboard sends unverified sessions to `/mfa` to enroll or enter a code.
 - Users can't change their own role, authorship or timestamps (column-level grants).
 - Post-login redirects only go to same-site paths (open-redirect guard, tested).
+- Password reset by email; the response is identical whether or not the account exists, so emails can't be probed. Accounts with 2FA must enter a code before changing the password.
 
 **Data access (row-level security on every table)**
 
@@ -170,6 +171,14 @@ Supabase's built-in email only reaches your own team's addresses, so set up cust
 ```
 
 Without custom SMTP, confirmation still works: if the link opens in a different browser, the user is told their email is confirmed and asked to sign in.
+
+For **password resets** (Forgot your password? on the sign-in page), set Authentication > Emails > **Reset Password** to:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">Reset your password</a>
+```
+
+The link signs the user in and opens `/reset-password` to choose a new password. Accounts with 2FA enter their code first.
 
 ## Project structure
 
