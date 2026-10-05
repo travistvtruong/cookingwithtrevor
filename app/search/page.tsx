@@ -52,9 +52,10 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
               {results.length} {results.length === 1 ? "result" : "results"} for &ldquo;{q}&rdquo;
             </p>
             <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {results.map((r) => (
+              {results.map((r, i) => (
                 <li key={`${r.kind}-${r.id}`}>
                   <RecipeCard
+                    preload={i === 0}
                     href={r.href}
                     badge={LABELS[r.kind]}
                     recipe={{

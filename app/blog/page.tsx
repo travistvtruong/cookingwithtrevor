@@ -19,7 +19,7 @@ export default async function BlogPage() {
       <p className="mb-10 mt-3 max-w-prose text-lg text-stone-600">
         Stories, tips and notes from the kitchen and beyond.
       </p>
-      <BlogGrid posts={posts} empty="Blog posts are on the way." />
+      <BlogGrid posts={posts} empty="Blog posts are on the way." preloadFirst />
     </main>
   );
 }

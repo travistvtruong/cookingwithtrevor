@@ -17,7 +17,7 @@ export default async function ReviewsPage() {
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:py-14">
       <h1 className="text-4xl font-extrabold tracking-tight text-ink sm:text-6xl">Reviews</h1>
       <p className="mb-10 mt-3 max-w-prose text-lg text-stone-600">Honest reviews of places I&apos;ve eaten and dishes I&apos;ve tried.</p>
-      <PostGrid posts={posts} empty="Reviews are on the way." />
+      <PostGrid posts={posts} empty="Reviews are on the way." preloadFirst />
     </main>
   );
 }

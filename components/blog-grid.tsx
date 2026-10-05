@@ -2,7 +2,15 @@ import { RecipeCard } from "@/components/recipe-card";
 import { blogPath, type BlogPostSummary } from "@/lib/blog";
 
 // Blog posts as photo cards (same card as recipes and reviews, labelled "Blog").
-export function BlogGrid({ posts, empty }: { posts: BlogPostSummary[]; empty: string }) {
+export function BlogGrid({
+  posts,
+  empty,
+  preloadFirst = false, // see PostGrid
+}: {
+  posts: BlogPostSummary[];
+  empty: string;
+  preloadFirst?: boolean;
+}) {
   if (posts.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-stone-600">{empty}</p>
@@ -10,9 +18,10 @@ export function BlogGrid({ posts, empty }: { posts: BlogPostSummary[]; empty: st
   }
   return (
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {posts.map((post) => (
+      {posts.map((post, i) => (
         <li key={post.id}>
           <RecipeCard
+            preload={preloadFirst && i === 0}
             href={blogPath(post)}
             badge="Blog"
             recipe={{
