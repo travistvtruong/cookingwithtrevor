@@ -39,6 +39,19 @@ export function LoginForm({ next, initialState }: { next: string; initialState: 
             className={inputClass}
           />
         </label>
+        {mode === "signup" && (
+          <label className="block space-y-1">
+            <span className="text-sm font-medium text-stone-700">Confirm password</span>
+            <input
+              name="confirm_password"
+              type="password"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              className={inputClass}
+            />
+          </label>
+        )}
 
         {state.error && (
           <p role="alert" className="text-sm text-red-700">{state.error}</p>

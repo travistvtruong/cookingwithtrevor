@@ -30,6 +30,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   const { email, password, next } = readCredentials(formData);
   const name = String(formData.get("name") ?? "").trim();
   if (password.length < 8) return { error: "Password must be at least 8 characters." };
+  // Checked here as well as in the form, so a typo can't lock someone out of a new account.
+  if (password !== String(formData.get("confirm_password") ?? "")) {
+    return { error: "The two passwords don't match." };
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({

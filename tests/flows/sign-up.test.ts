@@ -30,10 +30,23 @@ describe("sign up", () => {
     expect(fake.client.auth.signUp).not.toHaveBeenCalled();
   });
 
+  it("rejects a confirmation that doesn't match, without creating the account", async () => {
+    const result = await signUp({}, form({ email: "a@b.co", password: "correct-horse", confirm_password: "correct-hrose" }));
+    expect(result).toEqual({ error: "The two passwords don't match." });
+    expect(fake.client.auth.signUp).not.toHaveBeenCalled();
+  });
+
+  it("requires the confirmation field (can't be skipped by sending the form without it)", async () => {
+    const result = await signUp({}, form({ email: "a@b.co", password: "correct-horse" }));
+    expect(result.error).toMatch(/don't match/);
+    expect(fake.client.auth.signUp).not.toHaveBeenCalled();
+  });
+
   it("creates the account with the name and a callback that returns to `next`", async () => {
     const result = await signUp({}, form({
       email: " ana@example.com ",
       password: "correct-horse",
+      confirm_password: "correct-horse",
       name: " Ana ",
       next: "/recipes/mango",
     }));
@@ -56,7 +69,7 @@ describe("sign up", () => {
       error: null,
     } as never);
     await expect(
-      signUp({}, form({ email: "a@b.co", password: "long-enough", next: "/library" })),
+      signUp({}, form({ email: "a@b.co", password: "long-enough", confirm_password: "long-enough", next: "/library" })),
     ).rejects.toMatchObject({ url: "/library" });
   });
 
@@ -66,7 +79,7 @@ describe("sign up", () => {
       error: null,
     } as never);
     await expect(
-      signUp({}, form({ email: "a@b.co", password: "long-enough", next: "//evil.example" })),
+      signUp({}, form({ email: "a@b.co", password: "long-enough", confirm_password: "long-enough", next: "//evil.example" })),
     ).rejects.toMatchObject({ url: "/" });
   });
 
@@ -75,7 +88,7 @@ describe("sign up", () => {
       data: { session: null, user: null },
       error: { message: "User already registered" },
     } as never);
-    const result = await signUp({}, form({ email: "a@b.co", password: "long-enough" }));
+    const result = await signUp({}, form({ email: "a@b.co", password: "long-enough", confirm_password: "long-enough" }));
     expect(result).toEqual({ error: "User already registered" });
   });
 });
