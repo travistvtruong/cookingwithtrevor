@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to main content
         </a>
-        <header className="bg-white">
+        <header className="bg-white print:hidden">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
             <Link
               href="/"
@@ -74,7 +74,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <div id="main" tabIndex={-1} className="flex flex-1 flex-col outline-none">
           {children}
         </div>
-        <footer className="mt-16 bg-ink text-stone-300">
+        <footer className="mt-16 bg-ink text-stone-300 print:hidden">
           <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-display text-lg font-extrabold text-white">
               cookingwithtrevor

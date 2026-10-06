@@ -3,11 +3,16 @@ import Image from "next/image";
 import { Reviews as Comments } from "@/components/comments";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { RecipeDetails } from "@/components/recipe-details";
+import { RelatedPosts } from "@/components/related-posts";
 import { SaveButton } from "@/components/save-button";
+import { ShareButtons } from "@/components/share-buttons";
 import { Stars } from "@/components/stars";
+import { TagLinks } from "@/components/tag-links";
 import { formatIngredient } from "@/lib/ingredients";
 import { formatMinutes, postPath, totalMinutes, type Recipe } from "@/lib/recipes";
+import { shareImageUrl } from "@/lib/share";
 import { DEFAULT_SHARE_IMAGE } from "@/lib/share-image";
+import { siteUrl } from "@/lib/site-url";
 
 // The public page for a post: a recipe (/recipes/<slug>) or a food review
 // (/reviews/<slug>). Both share the layout, photo, write-up and comments.
@@ -20,7 +25,7 @@ export function PostView({ post }: { post: Recipe }) {
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(post) }} />
 
-      <article>
+      <article className="print:text-black">
         <header className="space-y-4">
           <p className="inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-dark">
             {isReview ? "Review" : "Recipe"}
@@ -57,24 +62,32 @@ export function PostView({ post }: { post: Recipe }) {
               </a>
             )}
             {!isReview && total && <span>{formatMinutes(total)}</span>}
-            {post.tags.length > 0 && <span>{post.tags.join(" · ")}</span>}
           </div>
 
-          {!isReview && (
-            <div className="flex flex-wrap items-center gap-3">
-              <a
-                href="#recipe"
-                className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
-              >
-                Jump to recipe ↓
-              </a>
-              <SaveButton recipeId={post.id} slug={post.slug} />
-            </div>
-          )}
+          <TagLinks tags={post.tags} className="print:hidden" />
+
+          <div className="flex flex-wrap items-center gap-3 print:hidden">
+            {!isReview && (
+              <>
+                <a
+                  href="#recipe"
+                  className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
+                >
+                  Jump to recipe ↓
+                </a>
+                <SaveButton recipeId={post.id} slug={post.slug} />
+              </>
+            )}
+            <ShareButtons
+              url={`${siteUrl()}${path}`}
+              title={post.title}
+              image={shareImageUrl(post.photo_url, siteUrl())}
+            />
+          </div>
         </header>
 
         {post.photo_url && (
-          <div className="relative mt-8 aspect-[3/2] overflow-hidden rounded-2xl bg-stone-100">
+          <div className={`relative mt-8 aspect-[3/2] overflow-hidden rounded-2xl bg-stone-100 ${isReview ? "" : "print:hidden"}`}>
             <Image
               src={post.photo_url}
               alt={post.title}
@@ -88,7 +101,7 @@ export function PostView({ post }: { post: Recipe }) {
         )}
 
         {post.intro && (
-          <div className="mt-8 space-y-4 text-lg leading-relaxed text-stone-800">
+          <div className={`mt-8 space-y-4 text-lg leading-relaxed text-stone-800 ${isReview ? "" : "print:hidden"}`}>
             {post.intro.split(/\n\s*\n/).map((p, i) => (
               <p key={i}>{p}</p>
             ))}
@@ -104,10 +117,18 @@ export function PostView({ post }: { post: Recipe }) {
           </div>
         )}
 
-        {!isReview && <PhotoGallery photos={post.photos} title={post.title} />}
+        {!isReview && (
+          <div className="print:hidden">
+            <PhotoGallery photos={post.photos} title={post.title} />
+          </div>
+        )}
 
-        <Comments recipeId={post.id} path={path} reviews={post.reviews} rating={post.rating} />
+        <div className="print:hidden">
+          <Comments recipeId={post.id} path={path} reviews={post.reviews} rating={post.rating} />
+        </div>
       </article>
+
+      <RelatedPosts post={post} />
     </main>
   );
 }

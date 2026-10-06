@@ -63,11 +63,11 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
-      <Link href="/library" className="inline-block py-1.5 text-sm text-brand hover:underline">
+      <Link href="/library" className="inline-block py-1.5 text-sm text-brand hover:underline print:hidden">
         ← My library
       </Link>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm print:hidden">
         {isOwnPrivate ? (
           <>
             <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700">
@@ -118,11 +118,11 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
         <RecipeDetails {...recipe} titleAs="h1" />
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 print:hidden">
         <NotesForm recipeId={recipe.id} notes={data.notes} />
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 print:hidden">
         <CollectionPicker
           // Remount when collections change (e.g. one was just created) to pick up new props.
           key={collections.map((c) => `${c.id}:${c.recipeIds.includes(recipe.id)}`).join()}
@@ -131,7 +131,7 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
         />
       </div>
 
-      <div className="mt-10 border-t border-stone-200 pt-6">
+      <div className="mt-10 border-t border-stone-200 pt-6 print:hidden">
         {isOwnPrivate ? (
           <DeleteButton
             action={deleteMyRecipe.bind(null, recipe.id)}

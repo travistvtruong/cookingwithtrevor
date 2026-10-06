@@ -33,12 +33,15 @@ export function missingTable(error: { code?: string } | null) {
 
 export const blogPath = (post: { slug: string }) => `/blog/${post.slug}`;
 
-export async function getPublishedBlogPosts({ limit }: { limit?: number } = {}): Promise<BlogPostSummary[]> {
+export async function getPublishedBlogPosts(
+  { tag, limit }: { tag?: string; limit?: number } = {},
+): Promise<BlogPostSummary[]> {
   let query = createPublicClient()
     .from("blog_posts")
     .select(SUMMARY_FIELDS)
     .eq("is_public", true)
     .order("published_at", { ascending: false });
+  if (tag) query = query.contains("tags", [tag]);
   if (limit) query = query.limit(limit);
   const { data, error } = await query;
   if (missingTable(error)) return [];

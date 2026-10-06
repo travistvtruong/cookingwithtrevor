@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { ShareButtons } from "@/components/share-buttons";
+import { TagLinks } from "@/components/tag-links";
 import { bodyText, parseBody } from "@/lib/blog-body";
 import { blogPath, formatDate, getPublishedBlogPost, type BlogPost } from "@/lib/blog";
+import { shareImageUrl } from "@/lib/share";
 import { DEFAULT_SHARE_IMAGE } from "@/lib/share-image";
+import { siteUrl } from "@/lib/site-url";
 
 // Built on first visit, cached, rebuilt when the post is saved (plus a 60s refresh).
 export const revalidate = 60;
@@ -65,8 +69,13 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
           {post.excerpt && <p className="text-xl leading-relaxed text-stone-700">{post.excerpt}</p>}
           <p className="text-sm text-stone-600">
             <time dateTime={post.published_at ?? undefined}>{formatDate(post.published_at)}</time>
-            {post.tags.length > 0 && <span> · {post.tags.join(" · ")}</span>}
           </p>
+          <TagLinks tags={post.tags} />
+          <ShareButtons
+            url={`${siteUrl()}${blogPath(post)}`}
+            title={post.title}
+            image={shareImageUrl(post.cover_photo_url, siteUrl())}
+          />
         </header>
 
         {post.cover_photo_url && (

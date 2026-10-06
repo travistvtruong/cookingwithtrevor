@@ -50,9 +50,9 @@ const REVIEWS_SHOWN = 50;
 const SUMMARY_FIELDS =
   "id, kind, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, place_name, place_location, my_rating, published_at, updated_at";
 
-// Published posts, newest first; optionally only one kind and/or the latest few.
+// Published posts, newest first; optionally only one kind, one tag, and/or the latest few.
 export async function getPublishedRecipes(
-  { kind, limit }: { kind?: PostKind; limit?: number } = {},
+  { kind, tag, limit }: { kind?: PostKind; tag?: string; limit?: number } = {},
 ): Promise<RecipeSummary[]> {
   let query = createPublicClient()
     .from("recipes")
@@ -60,6 +60,7 @@ export async function getPublishedRecipes(
     .eq("is_public", true)
     .order("published_at", { ascending: false });
   if (kind) query = query.eq("kind", kind);
+  if (tag) query = query.contains("tags", [tag]);
   if (limit) query = query.limit(limit);
   const { data, error } = await query;
   if (error) throw error;
