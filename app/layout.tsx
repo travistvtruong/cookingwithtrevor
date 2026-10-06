@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Montserrat } from "next/font/google";
+import { Analytics } from "@/components/analytics";
 import { InstagramLink } from "@/components/instagram-link";
 import { ServiceWorker } from "@/components/service-worker";
 import { SiteNav } from "@/components/site-nav";
@@ -29,6 +30,10 @@ export const metadata: Metadata = {
     template: "%s · cookingwithtrevor",
   },
   description: "Recipes, food reviews and stories from the kitchen.",
+  // Google Search Console ownership check (R38); left out until it's set.
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 // The header checks whether the blog has posts; refresh that at least every
@@ -96,6 +101,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </footer>
         <ServiceWorker />
+        <Analytics />
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { analyticsEnabled } from "@/lib/analytics";
 import { siteConfig } from "@/lib/site-config";
 import { turnstileSiteKey } from "@/lib/turnstile";
 
@@ -15,6 +16,7 @@ const UPDATED = "October 5, 2026";
 export default function PrivacyPage() {
   const email = siteConfig.contactEmail;
   const captcha = Boolean(turnstileSiteKey());
+  const analytics = analyticsEnabled();
 
   return (
     <main className="mx-auto w-full max-w-prose flex-1 px-4 py-10 sm:py-14">
@@ -26,8 +28,11 @@ export default function PrivacyPage() {
           <h2>The short version</h2>
           <p>
             You can read everything here without an account. If you make one, the site keeps only what it needs to
-            run your account and the things you save. There are no ads, no analytics and no tracking cookies, and
-            nothing is sold or shared for marketing.
+            run your account and the things you save. There are no ads and no tracking cookies, and nothing is sold
+            or shared for marketing.{" "}
+            {analytics
+              ? "Page visits are counted anonymously, without cookies (see below)."
+              : "There are no analytics."}
           </p>
         </section>
 
@@ -62,6 +67,12 @@ export default function PrivacyPage() {
             <li>Supabase stores accounts, posts, comments and photos.</li>
             <li>Vercel hosts the website and keeps standard server logs (such as IP addresses) for a short time.</li>
             <li>Google (Gmail) sends account emails such as sign-up confirmations and password resets.</li>
+            {analytics && (
+              <li>
+                Vercel Web Analytics counts visits to public pages without cookies or anything that identifies you.
+                Your own pages (library, lists, account) are never counted.
+              </li>
+            )}
             {captcha && (
               <li>
                 Cloudflare Turnstile checks that you&apos;re a person when you sign up, sign in or comment. It runs
