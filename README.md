@@ -164,7 +164,7 @@ In Supabase > Authentication > URL Configuration, set the Site URL to your deplo
 
 ### Confirmation emails
 
-Supabase's built-in email only reaches your own team's addresses, so set up custom SMTP in Supabase > Authentication > Emails > SMTP Settings. This project uses a dedicated Gmail account with an [app password](https://myaccount.google.com/apppasswords) (`smtp.gmail.com`, port 465); a custom domain with a service like Resend delivers better. Then, in Authentication > Emails > Confirm signup, use this link so it works in any browser or device:
+Supabase's built-in email only reaches your own team's addresses, so set up custom SMTP in Supabase > Authentication > Emails > SMTP Settings. Or run `scripts/configure-auth-email.ps1` (PowerShell), which sets SMTP and both email templates below through the Supabase Management API; it prompts for a personal access token and the Gmail app password and stores neither. This project uses a dedicated Gmail account with an [app password](https://myaccount.google.com/apppasswords) (`smtp.gmail.com`, port 465); a custom domain with a service like Resend delivers better. Then, in Authentication > Emails > Confirm signup, use this link so it works in any browser or device:
 
 ```html
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Confirm your email</a>
