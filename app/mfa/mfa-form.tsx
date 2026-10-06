@@ -11,6 +11,29 @@ type Step =
   | { kind: "enroll"; factorId: string; qr: string; secret: string } // first time: scan, then enter a code
   | { kind: "error"; message: string };
 
+// While setup is unfinished, remember the QR code in this tab so a reload (or
+// a phone browser reloading after you switch to the authenticator app) shows
+// the SAME code instead of a new one the app doesn't know. Cleared on success.
+const PENDING_KEY = "cwt-mfa-pending-enrollment";
+type Pending = { factorId: string; qr: string; secret: string };
+
+function readPending(): Pending | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    return raw ? (JSON.parse(raw) as Pending) : null;
+  } catch {
+    return null;
+  }
+}
+function writePending(p: Pending | null) {
+  try {
+    if (p) sessionStorage.setItem(PENDING_KEY, JSON.stringify(p));
+    else sessionStorage.removeItem(PENDING_KEY);
+  } catch {
+    // Storage unavailable (e.g. private mode): setup still works, just without reload protection.
+  }
+}
+
 // TOTP two-factor: enroll an authenticator app on first use, then ask for a
 // 6-digit code. A verified code upgrades the session to AAL2.
 export function MfaForm({ next }: { next: string }) {
@@ -34,25 +57,48 @@ export function MfaForm({ next }: { next: string }) {
       if (listError) return setStep({ kind: "error", message: listError.message });
 
       const verified = factors.totp[0];
-      if (verified) return setStep({ kind: "verify", factorId: verified.id });
+      if (verified) {
+        writePending(null);
+        return setStep({ kind: "verify", factorId: verified.id });
+      }
 
-      // Clear half-finished enrollments (e.g. the QR was never scanned) before starting fresh.
-      for (const f of factors.all.filter((f) => f.factor_type === "totp" && f.status === "unverified")) {
-        await mfa.unenroll({ factorId: f.id });
+      // Resume an unfinished setup from this tab if Supabase still has it.
+      const unverified = factors.all.filter((f) => f.factor_type === "totp" && f.status === "unverified");
+      const pending = readPending();
+      if (pending && unverified.some((f) => f.id === pending.factorId)) {
+        return setStep({ kind: "enroll", ...pending });
       }
-      const { data: enrolled, error: enrollError } = await mfa.enroll({
-        factorType: "totp",
-        friendlyName: "cookingwithtrevor",
-      });
-      if (enrollError || !enrolled) {
-        return setStep({
-          kind: "error",
-          message: enrollError?.message ?? "Couldn't start two-factor setup. Is MFA turned on in Supabase?",
-        });
-      }
-      setStep({ kind: "enroll", factorId: enrolled.id, qr: enrolled.totp.qr_code, secret: enrolled.totp.secret });
+      await startEnrollment(unverified.map((f) => f.id));
     })();
   }, [next, router]);
+
+  // Remove half-finished setups, then create a new QR code and remember it in this tab.
+  async function startEnrollment(staleFactorIds: string[]) {
+    const mfa = createClient().auth.mfa;
+    setStep({ kind: "loading" });
+    for (const factorId of staleFactorIds) await mfa.unenroll({ factorId });
+    const { data: enrolled, error: enrollError } = await mfa.enroll({
+      factorType: "totp",
+      friendlyName: "cookingwithtrevor",
+    });
+    if (enrollError || !enrolled) {
+      writePending(null);
+      return setStep({
+        kind: "error",
+        message: enrollError?.message ?? "Couldn't start two-factor setup. Is MFA turned on in Supabase?",
+      });
+    }
+    const fresh = { factorId: enrolled.id, qr: enrolled.totp.qr_code, secret: enrolled.totp.secret };
+    writePending(fresh);
+    setStep({ kind: "enroll", ...fresh });
+  }
+
+  async function startOver() {
+    if (step.kind !== "enroll") return;
+    setError(null);
+    setCode("");
+    await startEnrollment([step.factorId]);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -66,8 +112,12 @@ export function MfaForm({ next }: { next: string }) {
     setBusy(false);
     if (verifyError) {
       setCode("");
-      return setError("That code didn't work. Codes change every 30 seconds; try the current one.");
+      return setError(
+        `That code didn't work. Use the current code (they change every 30 seconds) and check your phone's ` +
+          `clock is set automatically.${verifyError.code ? ` (Error: ${verifyError.code})` : ""}`,
+      );
     }
+    writePending(null);
     router.replace(next);
     router.refresh();
   }
@@ -85,6 +135,10 @@ export function MfaForm({ next }: { next: string }) {
           <p className="text-sm text-stone-600">
             Can&apos;t scan? Enter this key instead:{" "}
             <code className="break-all rounded bg-stone-100 px-1.5 py-0.5 font-mono text-stone-800">{step.secret}</code>
+          </p>
+          <p className="text-sm text-stone-600">
+            On a phone, add the key in your authenticator app. If you leave this page, the same QR code will be here when
+            you come back.
           </p>
           <p className="font-semibold text-ink">2. Enter the 6-digit code it shows</p>
         </div>
@@ -118,6 +172,17 @@ export function MfaForm({ next }: { next: string }) {
       >
         {busy ? "Checking…" : step.kind === "enroll" ? "Turn on two-factor" : "Verify"}
       </button>
+
+      {step.kind === "enroll" && (
+        <button
+          type="button"
+          onClick={startOver}
+          disabled={busy}
+          className="w-full rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-800 hover:bg-stone-50 disabled:opacity-60"
+        >
+          Start over with a new QR code
+        </button>
+      )}
     </form>
   );
 }
