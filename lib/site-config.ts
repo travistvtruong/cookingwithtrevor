@@ -4,7 +4,7 @@ export const siteConfig = {
   // Full profile URL, e.g. "https://www.instagram.com/yourhandle/".
   instagramUrl: "https://www.instagram.com/cookingwithtrevor1/",
   // Where people can reach you about privacy or account questions.
-  contactEmail: "",
+  contactEmail: "cookingwithtrevor.noreply@gmail.com",
 };
 
 // "@yourhandle" from the profile URL, for link text.
