@@ -53,7 +53,7 @@ export function writePending(pending: PendingTicks) {
 
 // Did a save fail because there's no connection (rather than being refused)?
 export function isNetworkError(error: { message?: string } | null): boolean {
-  if (typeof navigator !== "undefined" && !navigator.onLine) return true;
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return true;
   return /failed to fetch|networkerror|load failed|network request failed/i.test(error?.message ?? "");
 }
 
