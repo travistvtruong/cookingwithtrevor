@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatIngredient } from "@/lib/ingredients";
+import { groupBySection } from "@/lib/store-sections";
 import { createClient } from "@/lib/supabase/client";
 
 type Item = {
@@ -14,6 +15,7 @@ type Item = {
 
 // Ticks update on screen immediately and save in the background, so the list
 // stays quick on a phone with weak signal. RLS limits updates to the user's own lists.
+// Items still to buy are grouped by store section (R10).
 export function Checklist({ initialItems }: { initialItems: Item[] }) {
   const [items, setItems] = useState(initialItems);
   const [error, setError] = useState(false);
@@ -63,11 +65,14 @@ export function Checklist({ initialItems }: { initialItems: Item[] }) {
         </p>
       )}
 
-      {todo.length > 0 && (
-        <ul className="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white">
-          {todo.map(row)}
-        </ul>
-      )}
+      {groupBySection(todo).map(({ section, items: sectionItems }) => (
+        <section key={section}>
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wider text-stone-600">{section}</h2>
+          <ul className="divide-y divide-stone-200 rounded-lg border border-stone-200 bg-white">
+            {sectionItems.map(row)}
+          </ul>
+        </section>
+      ))}
 
       {done.length > 0 && (
         <section>
