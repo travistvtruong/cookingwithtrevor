@@ -98,7 +98,20 @@ describe("sign in", () => {
     await expect(
       signIn({}, form({ email: "a@b.co", password: "pw", next: "/grocery" })),
     ).rejects.toMatchObject({ url: "/grocery" });
-    expect(fake.client.auth.signInWithPassword).toHaveBeenCalledWith({ email: "a@b.co", password: "pw" });
+    expect(fake.client.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: "a@b.co",
+      password: "pw",
+      options: { captchaToken: undefined },
+    });
+  });
+
+  it("passes the CAPTCHA token on to Supabase when there is one", async () => {
+    await expect(
+      signIn({}, form({ email: "a@b.co", password: "pw", next: "/", captcha_token: "tok-123" })),
+    ).rejects.toBeInstanceOf(RedirectSignal);
+    expect(fake.client.auth.signInWithPassword).toHaveBeenCalledWith(
+      expect.objectContaining({ options: { captchaToken: "tok-123" } }),
+    );
   });
 
   it("returns the error for wrong credentials", async () => {

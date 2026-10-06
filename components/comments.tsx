@@ -6,6 +6,7 @@ import { Stars } from "@/components/stars";
 import type { Comment } from "@/lib/recipes";
 import { createClient } from "@/lib/supabase/client";
 import { deleteReview, saveReview, type ReviewState } from "@/app/comment-actions";
+import { Captcha } from "./captcha";
 
 type Viewer = { userId: string | null; isAdmin: boolean } | undefined;
 
@@ -180,6 +181,8 @@ function ReviewForm({ recipeId, path, existing }: { recipeId: string; path: stri
           className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
         />
       </div>
+
+      <Captcha action="comment" resetKey={state} />
 
       <div className="flex flex-wrap items-center gap-3">
         <button

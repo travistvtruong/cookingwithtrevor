@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
+import { turnstileSiteKey } from "@/lib/turnstile";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
@@ -13,6 +14,7 @@ const UPDATED = "October 5, 2026";
 // Keep this in step with what the site actually stores (see the migrations).
 export default function PrivacyPage() {
   const email = siteConfig.contactEmail;
+  const captcha = Boolean(turnstileSiteKey());
 
   return (
     <main className="mx-auto w-full max-w-prose flex-1 px-4 py-10 sm:py-14">
@@ -60,6 +62,12 @@ export default function PrivacyPage() {
             <li>Supabase stores accounts, posts, comments and photos.</li>
             <li>Vercel hosts the website and keeps standard server logs (such as IP addresses) for a short time.</li>
             <li>Google (Gmail) sends account emails such as sign-up confirmations and password resets.</li>
+            {captcha && (
+              <li>
+                Cloudflare Turnstile checks that you&apos;re a person when you sign up, sign in or comment. It runs
+                only on those forms.
+              </li>
+            )}
           </ul>
         </section>
 

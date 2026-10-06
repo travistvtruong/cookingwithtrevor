@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site-url";
+import { captchaToken } from "@/lib/turnstile";
 
 export type PasswordState = { error?: string; message?: string; needsMfa?: boolean };
 
@@ -21,6 +22,7 @@ export async function requestPasswordReset(_prev: PasswordState, formData: FormD
     // Used by Supabase's default email template; the custom template links to
     // /auth/confirm?type=recovery&next=/reset-password instead (see README).
     redirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
+    captchaToken: captchaToken(formData),
   });
   if (error?.code === "over_email_send_rate_limit" || error?.status === 429) {
     return { error: "Too many reset emails. Please wait a few minutes and try again." };

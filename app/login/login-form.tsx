@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import { Captcha } from "@/components/captcha";
 import { signIn, signUp, type AuthState } from "./actions";
 
 const inputClass =
@@ -52,6 +53,8 @@ export function LoginForm({ next, initialState }: { next: string; initialState: 
             />
           </label>
         )}
+
+        <Captcha key={mode} action={mode === "signin" ? "login" : "signup"} resetKey={state} />
 
         {state.error && (
           <p role="alert" className="text-sm text-red-700">{state.error}</p>

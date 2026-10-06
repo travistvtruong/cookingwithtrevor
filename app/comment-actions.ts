@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { logAdminAction } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
+import { captchaToken } from "@/lib/turnstile";
+import { verifyCaptcha } from "@/lib/turnstile-server";
 
 // pending: saved, but held for moderation (the database flags links and spam words).
 export type ReviewState = { error?: string; message?: string; pending?: boolean };
@@ -37,6 +39,9 @@ export async function saveReview(
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const { stars, comment } = parsed.data;
+  if (!(await verifyCaptcha(captchaToken(formData), "comment"))) {
+    return { error: "Please complete the check above the button, then try again." };
+  }
 
   // Update first so edits don't count toward the new-review rate limit.
   // select() returns the saved row, including the status the database chose

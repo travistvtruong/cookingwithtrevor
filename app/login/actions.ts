@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
 import { siteUrl } from "@/lib/site-url";
+import { captchaToken } from "@/lib/turnstile";
 
 export type AuthState = { error?: string; message?: string };
 
@@ -20,7 +21,11 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const { email, password, next } = readCredentials(formData);
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: { captchaToken: captchaToken(formData) },
+  });
   if (error) return { error: error.message };
 
   redirect(next);
@@ -42,6 +47,7 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     options: {
       data: { name },
       emailRedirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
+      captchaToken: captchaToken(formData),
     },
   });
   if (error) return { error: error.message };

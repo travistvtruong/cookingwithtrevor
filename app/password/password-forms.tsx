@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { Captcha } from "@/components/captcha";
 import { requestPasswordReset, updatePassword, type PasswordState } from "./actions";
 
 const inputClass =
@@ -23,6 +24,7 @@ export function ForgotPasswordForm() {
         <span className="text-sm font-medium text-stone-700">Email</span>
         <input name="email" type="email" required autoComplete="email" className={inputClass} />
       </label>
+      <Captcha action="password-reset" resetKey={state} />
       <Feedback state={state} />
       <button type="submit" disabled={pending} className={submitClass}>
         {pending ? "Sending…" : "Email me a reset link"}
