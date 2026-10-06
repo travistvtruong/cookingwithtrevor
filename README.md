@@ -170,6 +170,8 @@ Supabase's built-in email only reaches your own team's addresses, so set up cust
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Confirm your email</a>
 ```
 
+The link opens `/auth/confirm`, where the person presses **Confirm my email**. The button step matters: university and corporate email scanners (e.g. Microsoft Safe Links) open every link in a message, which would otherwise use up the one-time link before the person clicks it.
+
 Without custom SMTP, confirmation still works: if the link opens in a different browser, the user is told their email is confirmed and asked to sign in.
 
 For **password resets** (Forgot your password? on the sign-in page), set Authentication > Emails > **Reset Password** to:
