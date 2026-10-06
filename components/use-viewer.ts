@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { countPendingComments } from "@/lib/moderation";
+import { clearOfflineData } from "@/lib/offline";
 import { createClient } from "@/lib/supabase/client";
 
 export type Viewer = {
@@ -25,7 +26,12 @@ export function useViewer(): Viewer | undefined {
     let cancelled = false;
 
     async function load(user: { id: string; email?: string } | null | undefined) {
-      if (!user) return !cancelled && setViewer({ userId: null, email: null, isAdmin: false, pendingComments: 0 });
+      if (!user) {
+        // Signed out (here, in another tab, or by deleting the account):
+        // remove any grocery lists saved on this device for offline use.
+        clearOfflineData();
+        return !cancelled && setViewer({ userId: null, email: null, isAdmin: false, pendingComments: 0 });
+      }
       const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
       const isAdmin = data?.role === "admin";
       const pendingComments = isAdmin ? await countPendingComments(supabase) : 0;

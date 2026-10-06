@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Montserrat } from "next/font/google";
 import { InstagramLink } from "@/components/instagram-link";
+import { ServiceWorker } from "@/components/service-worker";
 import { SiteNav } from "@/components/site-nav";
 import { UserMenu } from "@/components/user-menu";
 import { hasPublishedBlogPosts } from "@/lib/blog";
@@ -94,6 +95,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             </div>
           </div>
         </footer>
+        <ServiceWorker />
       </body>
     </html>
   );
