@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Geist, Montserrat } from "next/font/google";
 import { SiteNav } from "@/components/site-nav";
 import { UserMenu } from "@/components/user-menu";
+import { hasPublishedBlogPosts } from "@/lib/blog";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -28,7 +29,13 @@ export const metadata: Metadata = {
   description: "Recipes, food reviews and stories from the kitchen.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// The header checks whether the blog has posts; refresh that at least every
+// minute on otherwise-static pages (publishing also refreshes every page).
+export const revalidate = 60;
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const showBlog = await hasPublishedBlogPosts();
+
   return (
     <html lang="en" className={`${geistSans.variable} ${montserrat.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
@@ -61,7 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <UserMenu />
             </div>
           </div>
-          <SiteNav />
+          <SiteNav showBlog={showBlog} />
         </header>
         <div id="main" tabIndex={-1} className="flex flex-1 flex-col outline-none">
           {children}
@@ -74,7 +81,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <nav aria-label="Footer" className="flex gap-6 text-sm">
               <Link href="/recipes" className="hover:text-white">Recipes</Link>
               <Link href="/reviews" className="hover:text-white">Reviews</Link>
-              <Link href="/blog" className="hover:text-white">Blog</Link>
+              {showBlog && (
+                <Link href="/blog" className="hover:text-white">Blog</Link>
+              )}
             </nav>
             <p className="text-sm">© {new Date().getFullYear()} cookingwithtrevor</p>
           </div>

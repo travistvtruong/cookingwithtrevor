@@ -8,8 +8,10 @@ import { readGallery } from "@/lib/gallery";
 import { removePhoto } from "@/lib/photos";
 import { galleryUrls, savePostPhotos } from "@/lib/post-photos";
 
-// Refresh every cached page a blog post can appear on.
+// Refresh every cached page a blog post can appear on. The whole site is
+// refreshed because the header's Blog link depends on whether posts exist.
 function revalidateBlog(...slugs: string[]) {
+  revalidatePath("/", "layout");
   revalidatePath("/");
   revalidatePath("/blog");
   for (const slug of new Set(slugs.filter(Boolean))) revalidatePath(`/blog/${slug}`);

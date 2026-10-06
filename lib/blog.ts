@@ -62,6 +62,10 @@ export const getPublishedBlogPost = cache(async (slug: string): Promise<Publishe
   return { ...post, photos: await getPostPhotos(supabase, { blogPostId: post.id }) };
 });
 
+// Whether any blog post is published: the Blog link and sitemap entry only
+// appear once there is one. Cached per request (the layout and sitemap share it).
+export const hasPublishedBlogPosts = cache(async () => (await getPublishedBlogPosts({ limit: 1 })).length > 0);
+
 // Any blog post (draft or published) for the admin to edit. RLS: admin only.
 export async function getBlogPostForEdit(supabase: SupabaseClient, id: string): Promise<BlogPost | null> {
   const { data } = await supabase

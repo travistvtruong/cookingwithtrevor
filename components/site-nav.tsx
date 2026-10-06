@@ -9,13 +9,14 @@ type Item = { href: string; label: string };
 const SECTIONS: Item[] = [
   { href: "/recipes", label: "Recipes" },
   { href: "/reviews", label: "Reviews" },
-  { href: "/blog", label: "Blog" },
 ];
+const BLOG: Item = { href: "/blog", label: "Blog" };
 
 // The row under the logo: the blog's sections, then (when signed in) your own
 // pages, and the dashboard for the admin. Scrolls sideways on narrow screens
 // instead of making the page wider.
-export function SiteNav() {
+// showBlog: only once a blog post is published (decided on the server).
+export function SiteNav({ showBlog }: { showBlog: boolean }) {
   const pathname = usePathname();
   const viewer = useViewer();
 
@@ -47,7 +48,7 @@ export function SiteNav() {
   return (
     <nav aria-label="Main" className="border-y border-stone-200">
       <ul className="mx-auto flex max-w-6xl items-center gap-6 overflow-x-auto px-4 sm:gap-8">
-        {SECTIONS.map(link)}
+        {(showBlog ? [...SECTIONS, BLOG] : SECTIONS).map(link)}
         {personal.length > 0 && (
           <>
             <li aria-hidden className="h-4 w-px shrink-0 bg-stone-300" />

@@ -72,6 +72,8 @@ describe("publish a blog post (admin dashboard)", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/");
     expect(revalidatePath).toHaveBeenCalledWith("/blog");
     expect(revalidatePath).toHaveBeenCalledWith("/blog/a-week-of-street-food-in-hanoi");
+    // The header's Blog link appears once a post exists, so every page is refreshed.
+    expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
   });
 
   it("'Save draft' keeps it private", async () => {
