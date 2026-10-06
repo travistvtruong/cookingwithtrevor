@@ -39,7 +39,7 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
         return b;
       };
     }
-    for (const f of ["eq", "neq", "in", "is", "ilike", "contains", "order", "limit", "range"]) {
+    for (const f of ["eq", "neq", "in", "is", "not", "gt", "gte", "lt", "lte", "ilike", "contains", "order", "limit", "range"]) {
       b[f] = (...args: unknown[]) => {
         call.filters.push([f, ...args]);
         return b;

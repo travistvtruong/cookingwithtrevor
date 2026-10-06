@@ -28,6 +28,7 @@ type SavedRecipe = {
     tags: string[];
     is_public: boolean;
     author_id: string;
+    source_url: string | null;
     ingredients: (Ingredient & { position: number })[];
     steps: { position: number; text: string }[];
   } | null;
@@ -42,7 +43,7 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
     .select(
       `notes,
        recipe:recipes (
-         id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, is_public, author_id,
+         id, title, slug, intro, photo_url, prep_min, cook_min, servings, tags, is_public, author_id, source_url,
          ingredients (position, quantity, unit, name),
          steps (position, text)
        )`,
@@ -112,6 +113,15 @@ export default async function LibraryRecipePage({ params }: PageProps<"/library/
             <p key={i}>{p}</p>
           ))}
         </div>
+      )}
+
+      {recipe.source_url && (
+        <p className="mt-4 text-sm text-stone-600">
+          Imported from{" "}
+          <a href={recipe.source_url} target="_blank" rel="noopener noreferrer nofollow" className="font-medium text-brand hover:underline">
+            {new URL(recipe.source_url).hostname.replace(/^www\./, "")}
+          </a>
+        </p>
       )}
 
       <div className="mt-6">

@@ -25,6 +25,8 @@ export async function saveMyRecipe(
   if ("state" in result) return result.state;
 
   const { ingredients, steps, ...recipe } = result.data;
+  // Imported recipes remember where they came from (set on create only).
+  const sourceUrl = !id ? importedFrom(formData.get("source_url")) : null;
   // Private recipes never appear on the blog, so their slug only has to be unique.
   // Keep it stable on edit; on create add a random suffix to avoid collisions.
   const slug =
@@ -49,10 +51,27 @@ export async function saveMyRecipe(
 
   if (error) return { error: `Could not save: ${error.message}`, values };
 
+  if (sourceUrl) {
+    // Best effort: the recipe is saved either way; only the source link would be missing.
+    await supabase.from("recipes").update({ source_url: sourceUrl }).eq("id", data.id).eq("author_id", userId);
+  }
+
   if (previousPhoto && previousPhoto !== recipe.photo_url) await removePhoto(supabase, previousPhoto);
 
   revalidatePath("/library");
   redirect(`/library/${data.id}`);
+}
+
+// Only plain http(s) links are stored as a recipe's source.
+function importedFrom(value: FormDataEntryValue | null): string | null {
+  const raw = String(value ?? "").trim();
+  if (!raw || raw.length > 2000) return null;
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function deleteMyRecipe(id: string): Promise<{ error?: string }> {

@@ -21,9 +21,10 @@ type Props = {
   initial: RecipeFormValues;
   photoPreview?: string; // signed URL for an existing private photo
   gallery?: GalleryPhoto[]; // extra photos (posts only; library recipes have one photo)
+  sourceUrl?: string; // page an imported recipe came from (library only)
 };
 
-export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial, photoPreview, gallery = [] }: Props) {
+export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initial, photoPreview, gallery = [], sourceUrl }: Props) {
   const isPost = variant === "post";
   const [state, formAction, pending] = useActionState(action, {});
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -60,6 +61,7 @@ export function RecipeForm({ variant, action, deleteAction, id, savedSlug, initi
       {id && <input type="hidden" name="id" value={id} />}
       {savedSlug && <input type="hidden" name="previous_slug" value={savedSlug} />}
       <input type="hidden" name="kind" value={kind} />
+      {sourceUrl && <input type="hidden" name="source_url" value={sourceUrl} />}
 
       {isPost && (
         <fieldset>
