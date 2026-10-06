@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { BlogGrid } from "@/components/blog-grid";
 import { PostGrid } from "@/components/post-grid";
 import { getPublishedBlogPosts } from "@/lib/blog";
@@ -14,11 +15,12 @@ export async function generateStaticParams() {
   return [];
 }
 
-async function postsTagged(tag: string) {
+// Wrapped in React cache so generateMetadata and the page share one lookup.
+const postsTagged = cache(async (tag: string) => {
   if (!isTag(tag)) return null;
   const [posts, blogPosts] = await Promise.all([getPublishedRecipes({ tag }), getPublishedBlogPosts({ tag })]);
   return posts.length + blogPosts.length > 0 ? { posts, blogPosts } : null;
-}
+});
 
 export async function generateMetadata({ params }: PageProps<"/tags/[tag]">): Promise<Metadata> {
   const { tag } = await params;

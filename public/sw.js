@@ -9,6 +9,13 @@
 
 const PAGES = "cwt-grocery-pages-v1";
 const ASSETS = "cwt-static-v1";
+// Each deploy brings new hashed files; keep only the most recent ones.
+const MAX_ASSETS = 150;
+
+async function trim(cache) {
+  const keys = await cache.keys(); // oldest first
+  await Promise.all(keys.slice(0, Math.max(0, keys.length - MAX_ASSETS)).map((k) => cache.delete(k)));
+}
 
 self.addEventListener("install", () => self.skipWaiting());
 
@@ -38,7 +45,7 @@ self.addEventListener("fetch", (event) => {
         const hit = await cache.match(request);
         if (hit) return hit;
         const response = await fetch(request);
-        if (response.ok) cache.put(request, response.clone());
+        if (response.ok) cache.put(request, response.clone()).then(() => trim(cache));
         return response;
       }),
     );
