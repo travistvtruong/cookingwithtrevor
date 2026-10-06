@@ -2,7 +2,7 @@
 // anything left empty is simply not shown.
 export const siteConfig = {
   // Full profile URL, e.g. "https://www.instagram.com/yourhandle/".
-  instagramUrl: "",
+  instagramUrl: "https://www.instagram.com/cookingwithtrevor1/",
   // Where people can reach you about privacy or account questions.
   contactEmail: "",
 };
