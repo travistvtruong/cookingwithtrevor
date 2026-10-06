@@ -178,7 +178,7 @@ For **password resets** (Forgot your password? on the sign-in page), set Authent
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">Reset your password</a>
 ```
 
-The link signs the user in and opens `/reset-password` to choose a new password. Accounts with 2FA enter their code first.
+The link opens `/auth/confirm` with a **Continue to set a new password** button (scanner-safe, as above), then `/reset-password`. Accounts with 2FA enter their code first.
 
 ## Project structure
 

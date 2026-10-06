@@ -71,6 +71,7 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
       signInWithPassword: vi.fn(async () => ({ data: {}, error: null })),
       signOut: vi.fn(async () => ({ error: null })),
       resetPasswordForEmail: vi.fn(async () => ({ data: {}, error: null as { code?: string; status?: number; message: string } | null })),
+      verifyOtp: vi.fn(async () => ({ data: {}, error: null as { code?: string; message: string } | null })),
       updateUser: vi.fn(async () => ({ data: { user: {} }, error: null as { code?: string; message: string } | null })),
     },
   };
