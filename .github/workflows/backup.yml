@@ -1,0 +1,69 @@
+# Nightly database backup (R37), kept outside Supabase as an encrypted
+# workflow artifact for 30 days. The repo is public and anyone can download a
+# public repo's artifacts, so the dump is encrypted before upload.
+#
+# Off until two repository secrets exist (Settings > Secrets and variables > Actions):
+#   SUPABASE_DB_URL    the Session pooler connection string (Supabase > Connect),
+#                      with the database password filled in
+#   BACKUP_PASSPHRASE  a long random passphrase; keep a copy somewhere safe,
+#                      without it the backups can't be opened
+# Restoring is described in the README. Photos in Storage are not included.
+
+name: Database backup
+
+on:
+  schedule:
+    - cron: "17 7 * * *" # every day, 07:17 UTC
+  workflow_dispatch: # "Run workflow" button for a backup on demand
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$DB_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "::notice::Backups are off: add the SUPABASE_DB_URL and BACKUP_PASSPHRASE secrets to turn them on."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dump and encrypt
+        if: steps.config.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          umask 077
+          stamp=$(date -u +%Y-%m-%dT%H%MZ)
+          # pg_dump from the official image (v17 can dump the Supabase server).
+          # Schemas: the app's tables, accounts (auth) and storage metadata.
+          docker run --rm -e DB_URL postgres:17 \
+            pg_dump "$DB_URL" --format=custom --no-owner --no-privileges \
+              --schema=public --schema=auth --schema=storage \
+            > db.dump
+          test -s db.dump
+          gpg --batch --yes --pinentry-mode loopback --passphrase-fd 3 \
+            --symmetric --cipher-algo AES256 --output "cookingwithtrevor-$stamp.dump.gpg" db.dump 3<<<"$PASSPHRASE"
+          rm db.dump
+          ls -l cookingwithtrevor-*.dump.gpg
+
+      - name: Keep the encrypted backup
+        if: steps.config.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup
+          path: cookingwithtrevor-*.dump.gpg
+          retention-days: 30
+          if-no-files-found: error
