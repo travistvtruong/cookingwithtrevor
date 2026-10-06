@@ -136,7 +136,8 @@ Security is enforced in **Postgres**, not just the UI, so it holds even if someo
 1. `npm install`
 2. Copy `.env.example` to `.env.local` and fill in your Supabase project URL and publishable key (Supabase > Project Settings > API).
 3. Turn on TOTP MFA in Supabase (Authentication > Multi-Factor), then run each file in `supabase/migrations/` in order (oldest first) in the SQL Editor.
-4. `npm run dev` and open http://localhost:3000
+4. Put your Instagram URL and contact email in `lib/site-config.ts` (left empty, the Instagram link is hidden).
+5. `npm run dev` and open http://localhost:3000
 
 ```
 npm test               # run the tests once
@@ -195,12 +196,14 @@ app/
   library/               saved and private recipes, search, notes, collections
   grocery/               grocery lists: combine recipes, tick items off
   login/, auth/          email sign-in/sign-up and confirmation handlers
+  account/               change name or password, delete your account
+  about/, privacy/       about page and privacy policy
   comment-actions.ts     ratings and comments
   sitemap.ts, robots.ts
 components/              shared UI (post page, cards, forms, photo upload, nav)
 lib/                     data access, validation, ingredient parser, grocery merge, photos
 lib/supabase/            Supabase clients (browser, server, public, proxy)
-proxy.ts                 refreshes auth sessions; guards /library, /grocery, /admin
+proxy.ts                 refreshes auth sessions; guards /library, /grocery, /account, /admin
 supabase/migrations/     schema, row-level security, storage policies, RPCs
 tests/                   unit tests and Server Action flow tests
 scripts/screenshots.mjs  README screenshots via Chrome DevTools Protocol

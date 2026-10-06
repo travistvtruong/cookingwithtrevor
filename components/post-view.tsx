@@ -7,6 +7,7 @@ import { SaveButton } from "@/components/save-button";
 import { Stars } from "@/components/stars";
 import { formatIngredient } from "@/lib/ingredients";
 import { formatMinutes, postPath, totalMinutes, type Recipe } from "@/lib/recipes";
+import { DEFAULT_SHARE_IMAGE } from "@/lib/share-image";
 
 // The public page for a post: a recipe (/recipes/<slug>) or a food review
 // (/reviews/<slug>). Both share the layout, photo, write-up and comments.
@@ -122,7 +123,7 @@ export function postMetadata(post: Recipe | null): Metadata {
       type: "article",
       title: post.title,
       description,
-      images: post.photo_url ? [post.photo_url] : [],
+      images: post.photo_url ? [post.photo_url] : [DEFAULT_SHARE_IMAGE],
     },
   };
 }

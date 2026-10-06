@@ -53,10 +53,15 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
     async () => ({ data: [], error: null }),
   );
 
+  const storageList = vi.fn<(folder: string, options?: { limit?: number }) => Promise<{ data: { name: string }[] | null; error: { message: string } | null }>>(
+    async () => ({ data: [], error: null }),
+  );
+
   const client = {
     from: (table: string) => builder({ table, op: "select", filters: [] }),
     storage: {
       from: (bucket: string) => ({
+        list: (folder: string, options?: { limit?: number }) => storageList(folder, options),
         remove: (paths: string[]) => {
           calls.push({ table: `storage:${bucket}`, op: "delete", payload: paths, filters: [] });
           return storageRemove(paths);
@@ -76,7 +81,7 @@ export function fakeSupabase(respond: (call: Call) => Result = () => ({ data: nu
     },
   };
 
-  return { client, calls, storageRemove };
+  return { client, calls, storageRemove, storageList };
 }
 
 // next/navigation's redirect() and notFound() throw to stop rendering; mirror that.

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
+import { countPendingComments, pendingLabel } from "@/lib/moderation";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  await requireAdmin();
+  const { supabase } = await requireAdmin();
+  const pending = await countPendingComments(supabase);
 
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
@@ -25,8 +27,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <Link href="/admin/blog/new" className="inline-block py-1.5 font-medium text-brand hover:underline">
           New blog post
         </Link>
-        <Link href="/admin/moderation" className="inline-block py-1.5 font-medium text-stone-700 hover:underline">
+        <Link href="/admin/moderation" className="inline-flex items-center gap-1.5 py-1.5 font-medium text-stone-700 hover:underline">
           Moderation
+          {pending > 0 && <PendingBadge count={pending} />}
         </Link>
         <Link href="/admin/audit" className="inline-block py-1.5 font-medium text-stone-700 hover:underline">
           Audit log
@@ -34,5 +37,14 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       </nav>
       {children}
     </div>
+  );
+}
+
+function PendingBadge({ count }: { count: number }) {
+  return (
+    <span className="rounded-full bg-brand px-1.5 text-xs font-bold leading-5 text-white">
+      {count}
+      <span className="sr-only"> ({pendingLabel(count)})</span>
+    </span>
   );
 }

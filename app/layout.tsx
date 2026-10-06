@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Montserrat } from "next/font/google";
+import { InstagramLink } from "@/components/instagram-link";
 import { SiteNav } from "@/components/site-nav";
 import { UserMenu } from "@/components/user-menu";
 import { hasPublishedBlogPosts } from "@/lib/blog";
@@ -78,14 +79,19 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <p className="font-display text-lg font-extrabold text-white">
               cookingwithtrevor
             </p>
-            <nav aria-label="Footer" className="flex gap-6 text-sm">
+            <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
               <Link href="/recipes" className="hover:text-white">Recipes</Link>
               <Link href="/reviews" className="hover:text-white">Reviews</Link>
               {showBlog && (
                 <Link href="/blog" className="hover:text-white">Blog</Link>
               )}
+              <Link href="/about" className="hover:text-white">About</Link>
+              <Link href="/privacy" className="hover:text-white">Privacy</Link>
             </nav>
-            <p className="text-sm">© {new Date().getFullYear()} cookingwithtrevor</p>
+            <div className="flex items-center gap-4 text-sm">
+              <InstagramLink className="hover:text-white" />
+              <p>© {new Date().getFullYear()} cookingwithtrevor</p>
+            </div>
           </div>
         </footer>
       </body>

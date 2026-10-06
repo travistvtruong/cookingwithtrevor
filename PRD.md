@@ -86,6 +86,41 @@ MVP items ship first; everything else waits until the MVP is live.
 | R11 | Installable PWA with offline grocery list | Later |
 | R12 | Print-friendly recipe view | Later |
 | R13 | Page load under 2 seconds on mobile | MVP |
+| R14 | Blog posts: a third post type for general articles (title, excerpt, body, cover photo, tags) | Phase 2 (built) |
+| R15 | Blog index and post pages at /blog | Phase 2 (built) |
+| R16 | Create, edit, publish and delete blog posts from the dashboard | Phase 2 (built) |
+| R17 | Blog posts in the nav, home page and sitemap | Phase 2 (built) |
+| R18 | (Skipped) | |
+| R19 | Site search across recipes, reviews and blog posts | Phase 2 (built) |
+| R20 | Collections: group library recipes into named sets | Phase 2 (built) |
+| R21 | Two-factor authentication for the admin account | Phase 3 (built) |
+| R22 | Append-only audit log of admin actions | Phase 3 (built) |
+| R23 | Moderation queue: comments with links or spam words are held for review | Phase 3 (built) |
+| R24 | README security section | Phase 3 (built) |
+| R25 | Site icon and a branded default share image for links | Phase 4 |
+| R26 | About page | Phase 4 |
+| R27 | Instagram link in the footer and on the About page | Phase 4 |
+| R28 | Privacy policy page | Phase 4 |
+| R29 | Account settings: change name, change password, delete account and its data | Phase 4 |
+| R30 | Alert the author when comments are held for review | Phase 4 |
+| R31 | Cook mode: big text, screen stays on, step-by-step | Later |
+| R32 | Share buttons, including Pin It for Pinterest | Later |
+| R33 | Browse posts by tag (/tags/&lt;tag&gt; pages) | Later |
+| R34 | "More like this" related posts at the end of each post | Later |
+| R35 | CAPTCHA on sign-up and comments (Cloudflare Turnstile) | Later |
+| R36 | Privacy-friendly visitor analytics | Later |
+| R37 | Regular database backups outside Supabase | Later |
+| R38 | Google Search Console set up with the sitemap | Later |
+| R39 | Custom domain | Later |
+| R40 | Email the author a digest of held comments | Later |
+
+R14 to R24 were built in one overnight session before they were written down here; see NOTES-overnight.md and DECISIONS.md. R12 (print view) and R9 (serving scaler) are still Later.
+
+### Phase 4: ready to share (R25 to R30)
+
+Small items that make the site ready to share publicly. Personal details (Instagram URL, contact email) live in one settings file, `lib/site-config.ts`, and anything left empty is hidden. The About page is a draft for the author to rewrite in their own words. Publishing real content (more recipes) is the author's job and isn't tracked here.
+
+R40 is Later because emailing from the site would mean storing an email password in the app. Until then, R30 is a count on the dashboard and next to the Dashboard link.
 
 ## Tech stack and data model
 

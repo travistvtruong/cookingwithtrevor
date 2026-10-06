@@ -28,7 +28,9 @@ export function UserMenu() {
 
   return (
     <div className="flex items-center gap-4 text-sm">
-      <span className="hidden max-w-48 truncate text-stone-600 md:inline">{viewer.email}</span>
+      <Link href="/account" className="hidden max-w-48 truncate text-stone-600 hover:text-ink hover:underline md:inline">
+        {viewer.email}
+      </Link>
       <button type="button" onClick={handleSignOut} className="inline-block py-1.5 font-semibold text-brand hover:underline">
         Sign out
       </button>

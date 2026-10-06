@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { blogPath, missingTable } from "@/lib/blog";
+import { countPendingComments, pendingLabel } from "@/lib/moderation";
 import { postPath } from "@/lib/recipes";
 
 export default async function AdminDashboard() {
@@ -16,9 +17,19 @@ export default async function AdminDashboard() {
     .select("id, title, slug, is_public, updated_at")
     .order("updated_at", { ascending: false });
   if (blogError && !missingTable(blogError)) throw blogError;
+  const pending = await countPendingComments(supabase);
 
   return (
     <main>
+      {pending > 0 && (
+        <Link
+          href="/admin/moderation"
+          className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-brand-soft bg-brand-tint px-4 py-3 text-sm font-medium text-brand-dark hover:border-brand"
+        >
+          <span>{pendingLabel(pending)}.</span>
+          <span className="font-semibold">Review now →</span>
+        </Link>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-extrabold text-ink">Recipes &amp; reviews</h1>
         <div className="flex flex-wrap gap-2">

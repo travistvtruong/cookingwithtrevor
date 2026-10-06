@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { bodyText, parseBody } from "@/lib/blog-body";
 import { blogPath, formatDate, getPublishedBlogPost, type BlogPost } from "@/lib/blog";
+import { DEFAULT_SHARE_IMAGE } from "@/lib/share-image";
 
 // Built on first visit, cached, rebuilt when the post is saved (plus a 60s refresh).
 export const revalidate = 60;
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): P
       title: post.title,
       description: summary(post),
       publishedTime: post.published_at ?? undefined,
-      images: post.cover_photo_url ? [post.cover_photo_url] : [],
+      images: post.cover_photo_url ? [post.cover_photo_url] : [DEFAULT_SHARE_IMAGE],
     },
   };
 }

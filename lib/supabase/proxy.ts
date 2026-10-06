@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Paths that require a signed-in user. Everything else (the blog) stays public.
-const PROTECTED_PREFIXES = ["/library", "/grocery", "/admin"];
+const PROTECTED_PREFIXES = ["/library", "/grocery", "/admin", "/account"];
 
 // Refreshes the Supabase auth cookie on each request and guards private routes.
 export async function updateSession(request: NextRequest) {

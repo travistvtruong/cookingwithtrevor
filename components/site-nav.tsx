@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useViewer } from "./use-viewer";
 
-type Item = { href: string; label: string };
+type Item = { href: string; label: string; badge?: number };
 
 const SECTIONS: Item[] = [
   { href: "/recipes", label: "Recipes" },
@@ -24,11 +24,12 @@ export function SiteNav({ showBlog }: { showBlog: boolean }) {
     ? [
         { href: "/library", label: "Library" },
         { href: "/grocery", label: "Lists" },
-        ...(viewer.isAdmin ? [{ href: "/admin", label: "Dashboard" }] : []),
+        { href: "/account", label: "Account" },
+        ...(viewer.isAdmin ? [{ href: "/admin", label: "Dashboard", badge: viewer.pendingComments }] : []),
       ]
     : [];
 
-  const link = ({ href, label }: Item) => {
+  const link = ({ href, label, badge }: Item) => {
     const active = pathname === href || pathname.startsWith(`${href}/`);
     return (
       <li key={href} className="shrink-0">
@@ -40,6 +41,12 @@ export function SiteNav({ showBlog }: { showBlog: boolean }) {
           }`}
         >
           {label}
+          {badge ? (
+            <span className="ml-1.5 rounded-full bg-brand px-1.5 align-middle text-xs leading-5 tracking-normal text-white">
+              {badge}
+              <span className="sr-only"> comments waiting for review</span>
+            </span>
+          ) : null}
         </Link>
       </li>
     );
