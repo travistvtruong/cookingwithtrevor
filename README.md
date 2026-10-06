@@ -9,7 +9,7 @@
   <img src="docs/screenshots/review-mobile.png" alt="A food review on a phone: place, star rating and write-up" width="28%">
 </p>
 
-Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trade-offs are documented in [PRD.md](PRD.md) and [DECISIONS.md](DECISIONS.md) (40+ logged decisions, each with the alternative considered).
+Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trade-offs are documented in [PRD.md](PRD.md) and [DECISIONS.md](DECISIONS.md) (75+ logged decisions, each with the alternative considered).
 
 ---
 
@@ -17,16 +17,21 @@ Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trad
 
 **For readers**
 - Recipe posts with a **Jump to recipe** button, ingredients, numbered steps, times and servings
+- **Serving scaler:** change the servings and every amount updates ("2 eggs" becomes "1 egg" at half)
+- **Cook mode:** one step at a time in big text, an ingredient checklist, and the screen kept awake
+- **Print** just the recipe card, and **share** a post (phone share sheet, copy link, or Pin it)
 - **Food reviews** of restaurants and dishes, with the place, location and a 1–5 star rating
 - **Blog posts** for stories and tips, with headings and lists
 - **Star ratings and comments** on recipes and reviews, with an average shown on the post
-- **Search** across recipes (including ingredients), reviews and blog posts
+- **Search** across recipes (including ingredients), reviews and blog posts; **tag pages** (`/tags/dessert`) and **"More like this"** under each post
 
 **For signed-in home cooks**
 - **Save** any recipe to a personal library with one click, add **private notes**, and **search** by name or tag
 - Group library recipes into **collections** ("Weeknight dinners")
-- Add your own **private recipes**, including photos that only you can see
-- **Grocery lists:** pick several recipes and get one combined list. Matching items are merged (2 eggs + 3 eggs = 5 eggs, "2 cloves garlic, minced" + "1 clove garlic" = 3 cloves), different units stay separate. Tick items off on your phone in the store.
+- Add your own **private recipes**, including photos that only you can see, or **import one from a link**: the recipe data the page publishes for Google fills in the form, you check it and save, and your copy links back to the original
+- **Grocery lists:** pick several recipes and get one combined list. Matching items are merged (2 eggs + 3 eggs = 5 eggs, "2 cloves garlic, minced" + "1 clove garlic" = 3 cloves), different units stay separate, and items are **grouped by store section** (Produce, Dairy & eggs, Pantry…). Tick items off on your phone in the store.
+- **Install it like an app;** grocery lists you've opened **work offline**, and ticks made without signal save when you're back online
+- An **account page** to change your name or password, or delete your account and everything in it
 
 **For the author**
 - A dashboard to write, edit, publish and unpublish recipes, reviews and blog posts, without touching code
@@ -48,7 +53,7 @@ Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trad
 | Database, auth, storage | **Supabase**: Postgres with row-level security, email/password auth, Storage |
 | Styling | **Tailwind CSS 4**, theme tokens, Montserrat + Geist via `next/font` |
 | Validation | **zod** |
-| Testing | **Vitest** (168 tests) |
+| Testing | **Vitest** (281 tests) |
 | Hosting | **Vercel** (auto-deploys from `main`) |
 | Email | Supabase Auth over Gmail SMTP |
 
@@ -62,6 +67,8 @@ Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trad
 - **Spam protection.** One rating per person per post, a database-level rate limit on new accounts, and length limits.
 - **SEO.** schema.org `Recipe`, `Review` and `BlogPosting` data, a sitemap, robots.txt, canonical URLs and generated meta descriptions.
 - **Search without a search service.** One parameterized Postgres function does full-text + substring search over titles, write-ups, places, tags and ingredients, under row-level security.
+- **Safe recipe import.** Fetching a user-supplied URL is guarded against server-side request forgery: http(s) on default ports only, every address the host resolves to must be public (private, loopback, link-local and cloud-metadata ranges are refused, IPv4 and IPv6), each redirect is re-checked, with a timeout and a size cap. Sites that turn away bots get a clear message, not a workaround.
+- **Offline without a framework.** An 80-line service worker keeps the last copy of each grocery list and Next's hashed build files, and nothing else; queued ticks live in the browser until the connection returns, and saved lists are wiped whenever no one is signed in.
 
 ## Quality
 
@@ -76,9 +83,9 @@ Built solo with Next.js 16, Supabase and Tailwind CSS. Scope, decisions and trad
 
 **Accessibility:** WCAG AA colour contrast (checked for every colour pair), a skip link, labelled form fields and landmarks, keyboard-operable star pickers and checklists, and layouts tested down to 320px wide.
 
-**Tests:** `npm test` runs 168 Vitest tests:
-- **Unit tests:** ingredient parsing and formatting, grocery merge rules, slugs, the open-redirect guard on login, site-URL handling.
-- **Flow tests:** the real Server Actions for sign-up, creating recipes, reviews and blog posts, search, collections, private photos, photo galleries, grocery lists, ratings/comments, moderation, the audit log, admin 2FA and photo cleanup, run against a recording fake Supabase client so they never touch a real database.
+**Tests:** `npm test` runs 281 Vitest tests:
+- **Unit tests:** ingredient parsing and formatting, grocery merge rules, store sections, the serving scaler, tags and related posts, share links, slugs, the open-redirect guard on login, site-URL handling, which URLs analytics may report.
+- **Flow tests:** the real Server Actions for sign-up, creating recipes, reviews and blog posts, recipe import (parsing real-world JSON-LD shapes, and the SSRF address checks), search, collections, private photos, photo galleries, grocery lists, ratings/comments, CAPTCHA checks, moderation, the audit log, admin 2FA, account deletion and photo cleanup, run against a recording fake Supabase client so they never touch a real database.
 
 Database rules (RLS, triggers) aren't covered by automated tests yet; that needs a separate test Supabase project.
 
@@ -107,6 +114,7 @@ Security is enforced in **Postgres**, not just the UI, so it holds even if someo
 
 **Comments and spam**
 - One rating per person per post; a database rate limit on new accounts; length limits.
+- Optional **Cloudflare Turnstile** CAPTCHA on sign-up, sign-in, password reset and comments (see [Optional services](#optional-services)).
 - **Moderation queue:** a database trigger holds comments with links, domains, email addresses or spam words as *pending*. Users can't set the status, pending comments aren't shown or counted, and the admin approves or rejects them at `/admin/moderation`.
 - All user text is rendered as plain text by React (never as HTML); blog posts use a tiny text format instead of HTML or Markdown; structured data escapes `<`.
 
@@ -123,11 +131,15 @@ Security is enforced in **Postgres**, not just the UI, so it holds even if someo
 - Only the Supabase **publishable** key is used in the app; there's no service-role key in the code or on Vercel. Secrets (the SMTP password) live only in the Supabase dashboard.
 - Security headers on every response: `X-Frame-Options: DENY` / `frame-ancestors 'none'`, `nosniff`, a strict referrer policy, HSTS, and a `Permissions-Policy` that disables unused features.
 - Search and every other query use parameterized calls; nothing builds SQL from user input.
+- Recipe import fetches only public web addresses (see Engineering highlights), at most 20 saved imports per user per hour, and never copies the source's photo.
+- Account deletion is a database function that can only delete the caller (and refuses the admin), so the app never holds a key that could delete other users.
+- The offline service worker is served `no-cache` with a strict `default-src 'self'` policy.
 
 **Known gaps / next steps**
 - No full Content-Security-Policy yet (it needs testing against Next.js inline scripts).
 - Database rules (RLS, triggers) aren't covered by automated tests; that needs a separate test Supabase project.
 - Recipe/review audit entries are written by the app, so someone with admin credentials and 2FA calling the API directly could avoid them. Blog posts and moderation are logged by the database.
+- Recipe import checks a host's addresses before fetching, but DNS could in theory change between the check and the fetch (DNS rebinding). On Vercel's serverless functions there's no private network to reach, so the risk is low.
 
 ---
 
@@ -183,6 +195,29 @@ For **password resets** (Forgot your password? on the sign-in page), set Authent
 
 The link opens `/auth/confirm` with a **Continue to set a new password** button (scanner-safe, as above), then `/reset-password`. Accounts with 2FA enter their code first.
 
+### Optional services
+
+Each of these is off until you set it up. Environment variables go in Vercel > Project > Settings > Environment Variables, followed by a redeploy; see `.env.example`.
+
+**CAPTCHA (Cloudflare Turnstile, free).** The order matters, because once Supabase requires CAPTCHA it rejects sign-ins that don't carry a token:
+1. Cloudflare dashboard > Turnstile > Add widget, for your site's domain (add `localhost` too if you want it in development).
+2. In Vercel, set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (site key) and `TURNSTILE_SECRET_KEY` (secret key), and redeploy. The check now appears on the forms, and comments are verified.
+3. Last, in Supabase > Authentication > Attack Protection, turn on CAPTCHA protection with Turnstile and paste the same secret key.
+
+To turn it off, undo the steps in reverse order.
+
+**Visitor analytics (Vercel Web Analytics).** Turn on Web Analytics in the Vercel project, then set `NEXT_PUBLIC_ANALYTICS=vercel`. It uses no cookies, reports page paths without query strings, and never counts private pages; the privacy page updates itself to mention it.
+
+**Google Search Console.** Add a URL-prefix property for the site, choose the HTML tag method, put the `content` value in `GOOGLE_SITE_VERIFICATION`, redeploy, press Verify, then submit `sitemap.xml` under Sitemaps.
+
+**Database backups.** `.github/workflows/backup.yml` dumps the database every night, encrypts it, and keeps it as a workflow artifact for 30 days. To turn it on, add two secrets under the GitHub repo's Settings > Secrets and variables > Actions:
+- `SUPABASE_DB_URL`: Supabase > Connect > **Session pooler** connection string, with your database password in it. (GitHub's runners can't reach the direct connection, which is IPv6-only.)
+- `BACKUP_PASSPHRASE`: a long random passphrase. Keep a copy in a password manager; without it the backups can't be opened.
+
+Then run it once from Actions > Database backup > Run workflow. To restore, download the artifact, decrypt it with `gpg --decrypt cookingwithtrevor-<date>.dump.gpg > db.dump`, and load it with `pg_restore` into a **new** Supabase project (not over the live one) following Supabase's backup-and-restore guide. Try a restore once before you need one. Photos in Storage aren't included.
+
+**Custom domain.** Add the domain in Vercel > Domains, then update everything that names the old address: `NEXT_PUBLIC_SITE_URL` in Vercel, the Site URL and Redirect URLs in Supabase > Authentication > URL Configuration, the Turnstile widget's domains, and a new Search Console property.
+
 ## Project structure
 
 ```
@@ -191,20 +226,24 @@ app/
   recipes/, reviews/     section pages and post pages (cached, rebuilt on save)
   blog/                  blog index and posts
   search/                site search
+  tags/                  every tag, and the posts under each one
   admin/                 dashboard: posts, blog, moderation queue, audit log
   mfa/                   admin two-factor enroll/verify
-  library/               saved and private recipes, search, notes, collections
-  grocery/               grocery lists: combine recipes, tick items off
+  library/               saved and private recipes, import from a link, search, notes, collections
+  grocery/               grocery lists: combine recipes, grouped by store section, tick items off
   login/, auth/          email sign-in/sign-up and confirmation handlers
   account/               change name or password, delete your account
   about/, privacy/       about page and privacy policy
   comment-actions.ts     ratings and comments
   sitemap.ts, robots.ts
+  manifest.ts, icons/    installable app: web app manifest and PNG icons
 components/              shared UI (post page, cards, forms, photo upload, nav)
 lib/                     data access, validation, ingredient parser, grocery merge, photos
 lib/supabase/            Supabase clients (browser, server, public, proxy)
 proxy.ts                 refreshes auth sessions; guards /library, /grocery, /account, /admin
+public/sw.js             service worker: offline grocery lists
 supabase/migrations/     schema, row-level security, storage policies, RPCs
 tests/                   unit tests and Server Action flow tests
 scripts/screenshots.mjs  README screenshots via Chrome DevTools Protocol
+.github/workflows/       nightly encrypted database backup
 ```

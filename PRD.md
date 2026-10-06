@@ -79,12 +79,12 @@ MVP items ship first; everything else waits until the MVP is live.
 | R4 | Save recipes to a personal library; search by name and tag | MVP |
 | R5 | Grocery list from one or more recipes, with merged items and checkboxes | MVP |
 | R6 | Star ratings and comments on posts | MVP |
-| R7 | Import a recipe from a URL, with an edit step before saving | Later |
+| R7 | Import a recipe from a URL, with an edit step before saving | Phase 5 (built) |
 | R8 | Mobile-friendly layout on all pages | MVP |
-| R9 | Serving size scaler that updates ingredient amounts | Later |
-| R10 | Grocery list grouped by store section | Later |
-| R11 | Installable PWA with offline grocery list | Later |
-| R12 | Print-friendly recipe view | Later |
+| R9 | Serving size scaler that updates ingredient amounts | Phase 5 (built) |
+| R10 | Grocery list grouped by store section | Phase 5 (built) |
+| R11 | Installable PWA with offline grocery list | Phase 5 (built) |
+| R12 | Print-friendly recipe view | Phase 5 (built) |
 | R13 | Page load under 2 seconds on mobile | MVP |
 | R14 | Blog posts: a third post type for general articles (title, excerpt, body, cover photo, tags) | Phase 2 (built) |
 | R15 | Blog index and post pages at /blog | Phase 2 (built) |
@@ -97,21 +97,21 @@ MVP items ship first; everything else waits until the MVP is live.
 | R22 | Append-only audit log of admin actions | Phase 3 (built) |
 | R23 | Moderation queue: comments with links or spam words are held for review | Phase 3 (built) |
 | R24 | README security section | Phase 3 (built) |
-| R25 | Site icon and a branded default share image for links | Phase 4 |
-| R26 | About page | Phase 4 |
-| R27 | Instagram link in the footer and on the About page | Phase 4 |
-| R28 | Privacy policy page | Phase 4 |
-| R29 | Account settings: change name, change password, delete account and its data | Phase 4 |
-| R30 | Alert the author when comments are held for review | Phase 4 |
-| R31 | Cook mode: big text, screen stays on, step-by-step | Later |
-| R32 | Share buttons, including Pin It for Pinterest | Later |
-| R33 | Browse posts by tag (/tags/&lt;tag&gt; pages) | Later |
-| R34 | "More like this" related posts at the end of each post | Later |
-| R35 | CAPTCHA on sign-up and comments (Cloudflare Turnstile) | Later |
-| R36 | Privacy-friendly visitor analytics | Later |
-| R37 | Regular database backups outside Supabase | Later |
-| R38 | Google Search Console set up with the sitemap | Later |
-| R39 | Custom domain | Later |
+| R25 | Site icon and a branded default share image for links | Phase 4 (built) |
+| R26 | About page | Phase 4 (built) |
+| R27 | Instagram link in the footer and on the About page | Phase 4 (built) |
+| R28 | Privacy policy page | Phase 4 (built) |
+| R29 | Account settings: change name, change password, delete account and its data | Phase 4 (built) |
+| R30 | Alert the author when comments are held for review | Phase 4 (built) |
+| R31 | Cook mode: big text, screen stays on, step-by-step | Phase 5 (built) |
+| R32 | Share buttons, including Pin It for Pinterest | Phase 5 (built) |
+| R33 | Browse posts by tag (/tags/&lt;tag&gt; pages) | Phase 5 (built) |
+| R34 | "More like this" related posts at the end of each post | Phase 5 (built) |
+| R35 | CAPTCHA on sign-up and comments (Cloudflare Turnstile) | Phase 5 (built, needs keys) |
+| R36 | Privacy-friendly visitor analytics | Phase 5 (built, needs turning on) |
+| R37 | Regular database backups outside Supabase | Phase 5 (built, needs secrets) |
+| R38 | Google Search Console set up with the sitemap | Phase 5 (ready, needs verifying) |
+| R39 | Custom domain | Later (author: buy a domain; steps in README) |
 | R40 | Email the author a digest of held comments | Later |
 
 R14 to R24 were built in one overnight session before they were written down here; see NOTES-overnight.md and DECISIONS.md. R12 (print view) and R9 (serving scaler) are still Later.
@@ -121,6 +121,16 @@ R14 to R24 were built in one overnight session before they were written down her
 Small items that make the site ready to share publicly. Personal details (Instagram URL, contact email) live in one settings file, `lib/site-config.ts`, and anything left empty is hidden. The About page is a draft for the author to rewrite in their own words. Publishing real content (more recipes) is the author's job and isn't tracked here.
 
 R40 is Later because emailing from the site would mean storing an email password in the app. Until then, R30 is a count on the dashboard and next to the Dashboard link.
+
+### Phase 5: the rest of the Later list (R7, R9 to R12, R31 to R38)
+
+Built in one overnight session on the `overnight-later-items` branch. Choices worth knowing:
+
+- **R7 import** reads the schema.org Recipe data (JSON-LD) that most recipe sites publish for search engines, fills in the normal form, and saves a private library recipe with `source_url`. It never copies the photo. Sites that block bots (several large ones do) get a clear message instead of a workaround. Limited to 20 saved imports per user per hour.
+- **R10 store sections** come from a keyword list in code (longest matching phrase wins), so there's no database change and nothing for the author to maintain.
+- **R11 offline** covers grocery lists only: the pages you've opened, plus ticks made offline, which save when the connection returns. Nothing else is cached, and saved lists are deleted when no one is signed in.
+- **R35, R36, R37 and R38** are built but stay off until the author adds keys or turns them on (README > Optional services). Analytics is off by default because the privacy policy promised none; it updates itself when turned on.
+- **R39** needs a domain purchase, and **R40** would need an email password stored in the app, so both stay Later.
 
 ## Tech stack and data model
 
